@@ -1,0 +1,44 @@
+.notifications {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.notifications h2 {
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.notifications ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.notifications li {
+    background-color: #ffffff; /* Red */
+    border: 1px solid #ff5c5c;
+    padding: 10px;
+    margin-bottom: -10px; /* Overlap effect */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1000;
+    border-radius: 35px;
+    transition: transform 0.2s ease;
+}
+
+.notifications li:hover {
+    transform: scale(1.05);
+}
+
+.notifications li:not(:last-child) {
+    margin-bottom: -10px;
+}
+
+.notifications li:last-child {
+    margin-bottom: 10px;
+}

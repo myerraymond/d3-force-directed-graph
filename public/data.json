@@ -1,0 +1,31 @@
+{
+  "nodes": [
+    { "id": "John", "group": 1 },
+    { "id": "Emily", "group": 2 },
+    { "id": "Michael", "group": 2 },
+    { "id": "Sarah", "group": 2 },
+    { "id": "James", "group": 2 },
+    { "id": "Jessica", "group": 2 },
+    { "id": "Robert", "group": 2 },
+    { "id": "Jennifer", "group": 2 },
+    { "id": "William", "group": 2 },
+    { "id": "Elizabeth", "group": 2 },
+    { "id": "David", "group": 2 },
+    { "id": "Mary", "group": 2 }
+  ],
+  "links": [
+    { "source": "John", "target": "Emily" },
+    { "source": "Emily", "target": "Michael" },
+    { "source": "John", "target": "Sarah" },
+    { "source": "Emily", "target": "James" },
+    { "source": "John", "target": "Jessica" },
+    { "source": "Emily", "target": "Robert" },
+    { "source": "John", "target": "Jennifer" },
+    { "source": "Emily", "target": "William" },
+    { "source": "John", "target": "Elizabeth" },
+    { "source": "John", "target": "David" },
+    { "source": "John", "target": "Mary" },
+    { "source": "Elizabeth", "target": "Mary" },
+    { "source": "John", "target": "Michael" }
+  ]
+}

@@ -1,0 +1,56 @@
+.welcome-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #ffffff;
+  font-family: Arial, sans-serif;
+}
+
+.welcome-container h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.main-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.sub-title {
+  font-size: 1.5rem;
+  font-weight: normal;
+  color: #999;
+  font-style: italic;
+}
+
+.login-link {
+  text-decoration: none;
+  color: white;
+  background-color: #535353;
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin: 0.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.login-link:hover {
+  background-color: #3a3a3a;
+}
+
+.signup-link {
+  text-decoration: none;
+  color: white;
+  background-color: #285fa7;
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin: 0.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.signup-link:hover {
+  background-color: #213688;
+}

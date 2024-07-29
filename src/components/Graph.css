@@ -1,0 +1,143 @@
+/* Graph.css */
+
+.graph-container {
+  position: relative;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.tooltip {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  max-width: 200px;
+}
+
+.tooltip-close,
+.tooltip-delete,
+.tooltip-add-link {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  padding: 8px;
+  background-color: #ffb8b4;
+  color: black;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.tooltip-close:hover,
+.tooltip-delete:hover,
+.tooltip-add-link:hover {
+  background-color: #f4845f;
+}
+
+.tooltip-close:focus,
+.tooltip-delete:focus,
+.tooltip-add-link:focus {
+  outline: none;
+}
+
+.tooltip-add-link {
+  background-color: #f27059;
+}
+
+.tooltip-add-link:hover {
+  background-color: #f79d65;
+}
+
+.tooltip-add-link:focus {
+  outline: none;
+}
+
+.links line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.nodes circle {
+  fill: #f27059;
+  stroke: #fff;
+  stroke-width: 2px;
+}
+
+.nodes text {
+  font-size: 12px;
+  font-weight: normal;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.nodes .selected {
+  fill: #f25c54;
+}
+
+.clip-circle {
+  fill: none;
+  pointer-events: all;
+}
+
+.nodes .dragging {
+  fill: #f4845f;
+  stroke: #fff;
+}
+
+.tooltip .close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  cursor: pointer;
+}
+
+.tooltip .close:hover {
+  color: #f25c54;
+}
+
+.tooltip .close:focus {
+  outline: none;
+}
+
+.tooltip .content {
+  margin-bottom: 5px;
+}
+
+.tooltip .buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.tooltip .buttons button {
+  padding: 8px 12px;
+  border: none;
+  background-color: #f27059;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.tooltip .buttons button:hover {
+  background-color: #f4845f;
+}
+
+.tooltip .buttons button:focus {
+  outline: none;
+}
+
+.tooltip .buttons .close-btn {
+  background-color: #999;
+}
+
+.tooltip .buttons .close-btn:hover {
+  background-color: #ccc;
+}

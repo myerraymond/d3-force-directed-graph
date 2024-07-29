@@ -1,0 +1,125 @@
+/* AddNodeButton.css */
+
+.add-node-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #f25c54; /* Red color */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    z-index: 100; /* Ensure it's above the modal */
+}
+
+.add-node-btn:hover {
+    background-color: #f27059; /* Darker red on hover */
+}
+
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 320px; /* Increased width for better layout */
+    text-align: center;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #888;
+}
+
+.close:hover {
+    color: #555;
+}
+
+.modal-content input[type="text"],
+.modal-content select {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.modal-content .connection-type {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.modal-content .connection-type label {
+    margin: 0 10px;
+    font-size: 16px;
+}
+
+.modal-content .connection-type input[type="radio"] {
+    margin-right: 5px;
+}
+
+.modal-content .search-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.modal-content .search-button {
+    background-color: #f4845f; /* Light red */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 16px;
+}
+
+.modal-content .search-button:hover {
+    background-color: #f79d65; /* Darker orange on hover */
+}
+
+.modal-content button {
+    background-color: #f7b267; /* Orange */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 16px;
+    width: 100%;
+}
+
+.modal-content button:hover {
+    background-color: #f79d65; /* Darker orange on hover */
+}
+
+/* AddNodeButton.css */
