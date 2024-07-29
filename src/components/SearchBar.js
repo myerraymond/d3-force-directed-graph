@@ -1,16 +1,31 @@
-import React, { useState } from 'react';
-import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore'; // Import necessary Firestore functions
+import React, { useState, useRef, useEffect } from 'react';
+import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, getDoc, setDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import { useAuth } from '../AuthContext'; // Import useAuth
+import { useAuth } from '../AuthContext';
 import './SearchBar.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
-function SearchBar({ onFriendSelect }) {
+function SearchBar({ onFriendSelect, onFriendAdded }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate(); // Initialize useNavigate
-    const { currentUser } = useAuth(); // Access current user
+    const [tooltipVisible, setTooltipVisible] = useState(false);
+    const [tooltipPosition, setTooltipPosition] = useState('bottom');
+    const infoIconRef = useRef(null);
+    const navigate = useNavigate();
+    const { currentUser } = useAuth();
+
+    useEffect(() => {
+        if (tooltipVisible && infoIconRef.current) {
+            const iconRect = infoIconRef.current.getBoundingClientRect();
+            const tooltipHeight = 40; // Adjust this value based on your tooltip's height
+            const viewportHeight = window.innerHeight;
+            const tooltipPosition = iconRect.top + tooltipHeight > viewportHeight ? 'top' : 'bottom';
+            setTooltipPosition(tooltipPosition);
+        }
+    }, [tooltipVisible]);
 
     const handleSearch = async () => {
         setLoading(true);
@@ -29,7 +44,7 @@ function SearchBar({ onFriendSelect }) {
     const handleSelect = async (friend) => {
         try {
             const friendId = friend.id;
-            
+
             // Retrieve full friend details from Firestore
             const friendDocRef = doc(db, 'users', friendId);
             const friendDoc = await getDoc(friendDocRef);
@@ -54,13 +69,36 @@ function SearchBar({ onFriendSelect }) {
                 connections: arrayUnion(currentUser.uid)
             });
 
-            // Pass the friend's full details to the parent component
-            onFriendSelect({
+            // Create the selected friend's node in the current user's node collection
+            await setDoc(doc(db, `users/${currentUser.uid}/nodes/${friendId}`), {
                 id: friendId,
-                displayName: friendData.displayName,
+                label: friendData.displayName,
                 profilePicture: friendData.profilePicture,
-                connections: friendData.connections || [] // Ensure connections field exists
+                connections: [currentUser.uid]
             });
+
+            // Create the current user's node in the selected friend's node collection
+            const currentUserDataRef = doc(db, 'users', currentUser.uid);
+            const currentUserData = await getDoc(currentUserDataRef);
+            const currentUserDetails = currentUserData.data();
+
+            await setDoc(doc(db, `users/${friendId}/nodes/${currentUser.uid}`), {
+                id: currentUser.uid,
+                label: currentUserDetails.displayName,
+                profilePicture: currentUserDetails.profilePicture,
+                connections: [friendId]
+            });
+
+            // // Pass the friend's full details to the parent component
+            // onFriendSelect({
+            //     id: friendId,
+            //     displayName: friendData.displayName,
+            //     profilePicture: friendData.profilePicture,
+            //     connections: friendData.connections || []
+            // });
+
+            // Notify the parent component to refresh the graph
+            onFriendAdded();
 
             setSearchQuery('');
             setSearchResults([]);
@@ -70,17 +108,31 @@ function SearchBar({ onFriendSelect }) {
     };
 
     const handleView = (friendId) => {
-        navigate(`/user/${friendId}`); // Route to the new page
+        navigate(`/user/${friendId}`);
+    };
+
+    const toggleTooltip = () => {
+        setTooltipVisible(prev => !prev);
     };
 
     return (
         <div className="search-bar">
-            <input
-                type="text"
-                placeholder="Search for friends..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            <div className="search-bar-header">
+                <input
+                    type="text"
+                    placeholder="Search for friends..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <div className="info-icon" onClick={toggleTooltip} ref={infoIconRef}>
+                    <FontAwesomeIcon icon={faInfoCircle} />
+                    {tooltipVisible && (
+                        <div className={`tooltip ${tooltipPosition} ${tooltipVisible ? 'show' : ''}`}>
+                            Psst! Usernames are case-sensitive.
+                        </div>
+                    )}
+                </div>
+            </div>
             <button onClick={handleSearch} disabled={loading || !searchQuery.trim()}>
                 Search
             </button>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { auth, db } from '../firebase';
-import { collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import "./Graph.css";
 import LinkModal from './LinkModal';
@@ -19,8 +19,8 @@ const Graph = ({ userId, friends }) => {
   });
 
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
-  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, content: '', nodeId: null });
   const [modalOpen, setModalOpen] = useState(false); // State for modal visibility
+  const [selectedNode, setSelectedNode] = useState(null); // State to track selected node
   const [linkingNodeId, setLinkingNodeId] = useState(null); // State to track which node to link
 
   useEffect(() => {
@@ -149,14 +149,8 @@ const Graph = ({ userId, friends }) => {
           .on("end", dragended)
       )
       .on("click", (event, d) => {
-        const [x, y] = d3.pointer(event);
-        setTooltip({
-          visible: true,
-          x: x + 10,
-          y: y + 10,
-          content: `ID: ${d.id}\nLabel: ${d.label}`,
-          nodeId: d.id,
-        });
+        setSelectedNode(d);
+        setModalOpen(true);
       });
 
     node
@@ -203,128 +197,43 @@ const Graph = ({ userId, friends }) => {
       .attr("r", 20);
   }, [dimensions, graphData]);
 
-  const handleTooltipClose = () => {
-    setTooltip({ visible: false, x: 0, y: 0, content: '', nodeId: null });
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedNode(null);
   };
 
   const handleDeleteNode = async () => {
-    if (!tooltip.nodeId) return;
+    if (!selectedNode) return;
 
     try {
-      // Delete node from Firestore
-      await deleteDoc(doc(db, `users/${auth.currentUser.uid}/nodes`, tooltip.nodeId));
+      const userUid = auth.currentUser.uid;
 
-      // Fetch updated data
-      const nodesQuery = collection(db, `users/${auth.currentUser.uid}/nodes`);
-      const nodesSnapshot = await getDocs(nodesQuery);
+      // Remove the node from Firestore
+      await deleteDoc(doc(db, `users/${userUid}/nodes`, selectedNode.id));
 
-      const nodes = nodesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      // Update local state to remove the node and its links
+      const updatedNodes = graphData.nodes.filter(node => node.id !== selectedNode.id);
+      const updatedLinks = graphData.links.filter(link => link.source.id !== selectedNode.id && link.target.id !== selectedNode.id);
 
-      const links = [];
-      nodes.forEach(node => {
-        if (node.connections) {
-          node.connections.forEach(connectionId => {
-            if (nodes.find(n => n.id === connectionId)) {
-              links.push({
-                source: node.id,
-                target: connectionId,
-                type: 'friend',
-                strength: 1
-              });
-            }
-          });
-        }
-      });
-
-      // Update graphData and restart simulation
-      setGraphData({ nodes, links });
-      setTooltip({ visible: false, x: 0, y: 0, content: '', nodeId: null });
+      setGraphData({ nodes: updatedNodes, links: updatedLinks });
+      closeModal(); // Close modal after deletion
     } catch (error) {
       console.error("Error deleting node:", error);
-    }
-  };
-
-  const handleAddLink = (nodeId) => {
-    console.log("Adding link for node:", nodeId); // Add this line
-    setLinkingNodeId(nodeId);
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setLinkingNodeId(null);
-  };
-
-  const handleLinkNode = async (targetNodeId) => {
-    try {
-      // Find the node in graphData by its id
-      const selectedNode = graphData.nodes.find(node => node.id === linkingNodeId);
-
-      if (!selectedNode) {
-        console.error(`Node with id ${linkingNodeId} not found in graphData`);
-        return;
-      }
-
-      // Update node's connections to include the selected node (targetNodeId)
-      const updatedConnections = [...new Set([...selectedNode.connections, targetNodeId])];
-
-      // Update local graphData to reflect the new link
-      const updatedNodes = graphData.nodes.map(node => {
-        if (node.id === selectedNode.id) {
-          return {
-            ...node,
-            connections: updatedConnections
-          };
-        }
-        return node;
-      });
-
-      setGraphData({ nodes: updatedNodes, links: graphData.links });
-
-      // Update Firestore document with new connections
-      await updateDoc(doc(db, `users/${auth.currentUser.uid}/nodes`, selectedNode.id), {
-        connections: updatedConnections
-      });
-
-      closeModal(); // Close modal after successfully adding link
-    } catch (error) {
-      console.error("Error adding link:", error);
     }
   };
 
   return (
     <div ref={containerRef} className="graph-container">
       <svg ref={svgRef} width={dimensions.width} height={dimensions.height}></svg>
-      {tooltip.visible && (
-        <div
-          className="tooltip"
-          style={{
-            left: tooltip.x,
-            top: tooltip.y
-          }}
-        >
-          <div className="tooltip-content">
-            {tooltip.content.split('\n').map((line, index) => (
-              <div key={index}>{line}</div>
-            ))}
-          </div>
-          <div className="tooltip-buttons">
-            <button className="tooltip-close" onClick={handleTooltipClose}>Close</button>
-            <button className="tooltip-delete" onClick={handleDeleteNode}>Delete Node</button>
-            <button className="tooltip-add-link" onClick={() => handleAddLink(tooltip.nodeId)}>Add Link</button>
-          </div>
-        </div>
-      )}
-      {modalOpen && (
+      {modalOpen && selectedNode && (
         <div className="modal-overlay">
-          <LinkModal
-            nodes={graphData.nodes.filter(node => node.id !== linkingNodeId)}
-            closeModal={closeModal}
-            handleLinkNode={handleLinkNode}
-          />
+          <div className="modal-content">
+            <h2>Node Information</h2>
+            <p>ID: {selectedNode.id}</p>
+            <p>Label: {selectedNode.label}</p>
+            <button onClick={closeModal}>Close</button>
+            <button onClick={handleDeleteNode}>Delete</button>
+          </div>
         </div>
       )}
     </div>

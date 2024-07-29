@@ -132,7 +132,6 @@ function MainPage({ handleAddNode }) {
                 </button>
             </div>
             <SearchBar onFriendSelect={handleFriendSelect} />
-            {/* <Notifications notifications={notifications} /> */}
             <Graph key={refreshPage.toString()} /> {/* Key prop to trigger refresh */}
             <AddNodeButton handleAddNode={handleAddNodeAndRefresh} />
         </>

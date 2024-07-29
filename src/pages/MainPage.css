@@ -2,6 +2,7 @@ body, html {
   margin: 0;
   padding: 0;
   height: 100%;
+  overflow: hidden; /* Prevent scrolling */
   background: linear-gradient(to top, #f25c540e, #ffffff); /* Blue to white gradient */
   font-family: Arial, sans-serif;
 }
