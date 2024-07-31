@@ -16,6 +16,7 @@ function MainPage({ handleAddNode }) {
     const [loading, setLoading] = useState(true);
     const [refreshPage, setRefreshPage] = useState(false); // State for refreshing the page
     const [friendsCount, setFriendsCount] = useState(0);
+    const [showSearchBar, setShowSearchBar] = useState(true);
 
     // Function to fetch user data and update connections on page refresh
     const fetchUserData = async (userId) => {
@@ -103,6 +104,14 @@ function MainPage({ handleAddNode }) {
         }
     };
 
+    const handleFriendAdded = () => {
+        // Refresh graph or other actions
+    };
+
+    const handleCloseSearchBar = () => {
+        setShowSearchBar(false);
+    };
+
     // Mock notifications
     const notifications = [
         "John added a new connection.",
@@ -131,8 +140,13 @@ function MainPage({ handleAddNode }) {
                     <FontAwesomeIcon icon={faSync} className="refresh-icon" />
                 </button>
             </div>
-            <SearchBar onFriendSelect={handleFriendSelect} />
-            <Graph key={refreshPage.toString()} /> {/* Key prop to trigger refresh */}
+            {showSearchBar && (
+                <SearchBar
+                    onFriendSelect={() => { /* Handle friend select */ }}
+                    onFriendAdded={handleFriendAdded}
+                    onClose={handleCloseSearchBar}
+                />
+            )}            <Graph key={refreshPage.toString()} /> {/* Key prop to trigger refresh */}
             <AddNodeButton handleAddNode={handleAddNodeAndRefresh} />
         </>
     );

@@ -74,7 +74,7 @@ function SignUp() {
         <div className="signup-container">
             <h1>Sign Up Page</h1>
             {error && <p className="error">{error}</p>}
-            {loading && <p className="loading">Signing up, please wait...</p>}
+            {loading && <p className="loading">Signing up, please wait... Don't refresh this page.</p>}
             <form onSubmit={handleSignUp}>
                 <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
                 <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />

@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate
-import { collection, doc, getDoc, getDocs, updateDoc, arrayUnion } from 'firebase/firestore';
+import { useParams, useNavigate } from 'react-router-dom';
+import { collection, doc, getDoc, getDocs, updateDoc, arrayUnion, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import Graph from '../components/Graph'; // Import the Graph component
-import { useAuth } from '../AuthContext'; // Import useAuth if needed
+import Graph from '../components/Graph';
+import { useAuth } from '../AuthContext';
 
 function UserGraphPage() {
     const { userId } = useParams();
-    const navigate = useNavigate(); // Initialize useNavigate
+    const navigate = useNavigate();
     const [friendsData, setFriendsData] = useState([]);
     const [userDisplayName, setUserDisplayName] = useState('');
     const [loading, setLoading] = useState(true);
-    const { currentUser } = useAuth(); // Use currentUser from AuthContext
+    const { currentUser } = useAuth();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -41,7 +41,7 @@ function UserGraphPage() {
     }, [userId]);
 
     const handleBack = () => {
-        navigate('/main'); // Redirect to the main page or any other page
+        navigate('/main');
     };
 
     const handleAdd = async () => {
@@ -51,8 +51,19 @@ function UserGraphPage() {
         }
 
         try {
-            console.log('Current User ID:', currentUser.uid);
-            console.log('Selected User ID:', userId);
+            // Retrieve current user data
+            const currentUserRef = doc(db, 'users', currentUser.uid);
+            const currentUserDoc = await getDoc(currentUserRef);
+            const currentUserData = currentUserDoc.data();
+
+            // Retrieve selected user data
+            const selectedUserRef = doc(db, 'users', userId);
+            const selectedUserDoc = await getDoc(selectedUserRef);
+            const selectedUserData = selectedUserDoc.data();
+
+            if (!currentUserData || !selectedUserData) {
+                throw new Error('User data not found');
+            }
 
             // Reference to the current user's primary node
             const userNodeRef = doc(db, `users/${currentUser.uid}/nodes/${currentUser.uid}`);
@@ -67,6 +78,22 @@ function UserGraphPage() {
             // Add the current user to the selected user's connections
             await updateDoc(selectedUserNodeRef, {
                 connections: arrayUnion(currentUser.uid)
+            });
+
+            // Create the selected user's node in the current user's node collection
+            await setDoc(doc(db, `users/${currentUser.uid}/nodes/${userId}`), {
+                id: userId,
+                label: selectedUserData.displayName,
+                profilePicture: selectedUserData.profilePicture,
+                connections: [currentUser.uid]
+            });
+
+            // Create the current user's node in the selected user's node collection
+            await setDoc(doc(db, `users/${userId}/nodes/${currentUser.uid}`), {
+                id: currentUser.uid,
+                label: currentUserData.displayName,
+                profilePicture: currentUserData.profilePicture,
+                connections: [userId]
             });
 
             alert('User added successfully!');

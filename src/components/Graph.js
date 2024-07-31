@@ -21,7 +21,6 @@ const Graph = ({ userId, friends }) => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [modalOpen, setModalOpen] = useState(false); // State for modal visibility
   const [selectedNode, setSelectedNode] = useState(null); // State to track selected node
-  const [linkingNodeId, setLinkingNodeId] = useState(null); // State to track which node to link
 
   useEffect(() => {
     const handleResize = () => {
@@ -42,16 +41,19 @@ const Graph = ({ userId, friends }) => {
       const nodesQuery = collection(db, `users/${uid}/nodes`);
       const nodesSnapshot = await getDocs(nodesQuery);
 
-      const nodes = nodesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const nodeMap = {};
+      nodesSnapshot.docs.forEach(doc => {
+        const node = { id: doc.id, ...doc.data() };
+        nodeMap[node.id] = node;
+      });
 
+      const nodes = Object.values(nodeMap);
       const links = [];
+
       nodes.forEach(node => {
         if (node.connections) {
           node.connections.forEach(connectionId => {
-            if (nodes.find(n => n.id === connectionId)) {
+            if (nodeMap[connectionId]) {
               links.push({
                 source: node.id,
                 target: connectionId,
