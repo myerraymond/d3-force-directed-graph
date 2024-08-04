@@ -1,15 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { auth, db } from '../firebase';
-import { arrayRemove, collection, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import "./Graph.css";
-import LinkModal from './LinkModal';
 
 const defaultImage = "./0.png";
 const primaryNode = "John";
 
-const Graph = ({ userId, friends }) => {
+const FriendsGraph = ({ userId, friends }) => {
   const svgRef = useRef();
   const containerRef = useRef();
 
@@ -21,7 +20,6 @@ const Graph = ({ userId, friends }) => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [modalOpen, setModalOpen] = useState(false); // State for modal visibility
   const [selectedNode, setSelectedNode] = useState(null); // State to track selected node
-  const [loading, setLoading] = useState(false); // State for loading indicator
 
   useEffect(() => {
     const handleResize = () => {
@@ -208,31 +206,11 @@ const Graph = ({ userId, friends }) => {
   const handleDeleteNode = async () => {
     if (!selectedNode) return;
 
-    setLoading(true); // Start loading indicator
-
     try {
       const userUid = auth.currentUser.uid;
 
-      // Retrieve all nodes for the current user
-      const nodesQuery = collection(db, `users/${userUid}/nodes`);
-      const nodesSnapshot = await getDocs(nodesQuery);
-      const nodes = nodesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-      // Get the IDs of nodes that are connected to the node being deleted
-      const connectedNodeIds = nodes
-        .filter(node => node.connections && node.connections.includes(selectedNode.id))
-        .map(node => node.id);
-
-      // Delete the node and its connections
+      // Remove the node from Firestore
       await deleteDoc(doc(db, `users/${userUid}/nodes`, selectedNode.id));
-
-      // Remove the deleted node's connections from other nodes
-      for (const id of connectedNodeIds) {
-        const nodeRef = doc(db, `users/${userUid}/nodes`, id);
-        await updateDoc(nodeRef, {
-          connections: arrayRemove(selectedNode.id)
-        });
-      }
 
       // Update local state to remove the node and its links
       const updatedNodes = graphData.nodes.filter(node => node.id !== selectedNode.id);
@@ -242,8 +220,6 @@ const Graph = ({ userId, friends }) => {
       closeModal(); // Close modal after deletion
     } catch (error) {
       console.error("Error deleting node:", error);
-    } finally {
-      setLoading(false); // Stop loading indicator
     }
   };
 
@@ -256,20 +232,12 @@ const Graph = ({ userId, friends }) => {
             <h2>Node Information</h2>
             <p>ID: {selectedNode.id}</p>
             <p>Label: {selectedNode.label}</p>
-            <button onClick={handleDeleteNode} disabled={loading}>
-              {loading ? "Deleting..." : "Delete"}
-            </button>
             <button onClick={closeModal}>Close</button>
           </div>
-        </div>
-      )}
-      {loading && (
-        <div className="loading-overlay">
-          <div className="loading-spinner"></div>
         </div>
       )}
     </div>
   );
 };
 
-export default Graph;
+export default FriendsGraph;

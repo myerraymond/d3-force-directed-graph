@@ -8,20 +8,21 @@
     color: white;
     border: none;
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
+    width: 60px; /* Increased size for better click area */
+    height: 60px;
+    font-size: 28px; /* Larger icon */
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Increased shadow for depth */
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Added transition for scale */
     z-index: 100; /* Ensure it's above the modal */
 }
 
 .add-node-btn:hover {
     background-color: #f27059; /* Darker red on hover */
+    transform: scale(1.1); /* Slightly enlarge on hover */
 }
 
 .modal {
@@ -39,10 +40,11 @@
 
 .modal-content {
     background-color: white;
-    padding: 20px;
+    padding: 30px; /* Increased padding for better spacing */
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 320px; /* Increased width for better layout */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Enhanced shadow for depth */
+    width: 360px; /* Increased width for better layout */
+    max-width: 90%; /* Responsive max width */
     text-align: center;
     position: relative;
 }
@@ -50,8 +52,8 @@
 .close {
     position: absolute;
     top: 10px;
-    right: 20px;
-    font-size: 24px;
+    right: 15px; /* Adjusted for better positioning */
+    font-size: 28px;
     cursor: pointer;
     color: #888;
 }
@@ -60,57 +62,36 @@
     color: #555;
 }
 
-.modal-content input[type="text"],
-.modal-content select {
-    width: calc(100% - 20px);
-    padding: 10px;
-    margin: 10px 0;
+.dropdown-container {
+    margin-bottom: 20px; /* Spacing between dropdowns */
+}
+
+.dropdown-container label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.dropdown-container select {
+    width: 100%;
+    padding: 12px;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 16px;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease;
 }
 
-.modal-content .connection-type {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 15px;
-}
-
-.modal-content .connection-type label {
-    margin: 0 10px;
-    font-size: 16px;
-}
-
-.modal-content .connection-type input[type="radio"] {
-    margin-right: 5px;
-}
-
-.modal-content .search-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 15px;
-}
-
-.modal-content .search-button {
-    background-color: #f4845f; /* Light red */
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-size: 16px;
-}
-
-.modal-content .search-button:hover {
-    background-color: #f79d65; /* Darker orange on hover */
+.dropdown-container select:focus {
+    border-color: #f25c54; /* Highlight border on focus */
+    outline: none;
 }
 
 .modal-content button {
     background-color: #f7b267; /* Orange */
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 12px 24px; /* Increased padding */
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
@@ -122,4 +103,21 @@
     background-color: #f79d65; /* Darker orange on hover */
 }
 
-/* AddNodeButton.css */
+/* Additional Styling for Better Layout and Responsiveness */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 90%; /* Adjust width for smaller screens */
+        padding: 20px;
+    }
+
+    .add-node-btn {
+        width: 50px; /* Adjust button size for smaller screens */
+        height: 50px;
+        font-size: 24px;
+    }
+
+    .modal-content button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+}

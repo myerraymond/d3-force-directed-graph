@@ -6,6 +6,8 @@ import SignUp from './pages/SignUp';
 import MainPage from './pages/MainPage';
 import data from './components/data.json';
 import UserGraphPage from './pages/UserGraphPage';
+import Discover from './pages/Discover';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
     const [graphData, setGraphData] = useState(data);
@@ -28,6 +30,8 @@ function App() {
                 <Route path="/main" element={<MainPage handleAddNode={handleAddNode} />} />
                 <Route path="*" element={<Navigate to="/" />} />
                 <Route path="/user/:userId" element={<UserGraphPage />} />
+                <Route path="/discover" Component={Discover} />
+                <Route path="/profile" Component={ProfilePage} />
             </Routes>
         </Router>
     );

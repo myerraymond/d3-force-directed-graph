@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { auth, db, updateConnectionsForAllNodes } from '../firebase'; // Import Firebase services
+import { auth, db, updateConnectionsForAllNodes } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, collection, getDocs, setDoc } from 'firebase/firestore'; // Import Firestore functions
+import { doc, getDoc, collection, getDocs, setDoc } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSync } from '@fortawesome/free-solid-svg-icons';
 
@@ -10,28 +10,27 @@ import './MainPage.css';
 import AddNodeButton from '../components/AddNodeButton';
 import Notifications from '../components/Notifications';
 import SearchBar from '../components/SearchBar';
+import { Link } from 'react-router-dom';
+import ShareButton from '../components/ShareButton'; // Import the ShareButton
 
 function MainPage({ handleAddNode }) {
     const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(true);
-    const [refreshPage, setRefreshPage] = useState(false); // State for refreshing the page
+    const [refreshPage, setRefreshPage] = useState(false);
     const [friendsCount, setFriendsCount] = useState(0);
     const [showSearchBar, setShowSearchBar] = useState(true);
 
-    // Function to fetch user data and update connections on page refresh
     const fetchUserData = async (userId) => {
         try {
-            const userRef = doc(db, `users/${userId}`); // Reference to the user document
-            const userDoc = await getDoc(userRef); // Fetch user document
+            const userRef = doc(db, `users/${userId}`);
+            const userDoc = await getDoc(userRef);
 
             if (userDoc.exists()) {
                 setUsername(userDoc.data().displayName);
 
-                // Fetch nodes and count connections
                 const nodesQuerySnapshot = await getDocs(collection(db, `users/${userId}/nodes`));
                 const nodes = nodesQuerySnapshot.docs.map(doc => doc.data());
 
-                // Count connections
                 let totalConnections = 0;
                 nodes.forEach(node => {
                     totalConnections += node.connections.length;
@@ -49,7 +48,7 @@ function MainPage({ handleAddNode }) {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                fetchUserData(user.uid); // Call fetchUserData for authenticated user
+                fetchUserData(user.uid);
             } else {
                 setLoading(false);
             }
@@ -58,46 +57,33 @@ function MainPage({ handleAddNode }) {
         return () => unsubscribe();
     }, []);
 
-    // Function to handle adding a node and trigger page refresh
     const handleAddNodeAndRefresh = useCallback(async (nodeName) => {
-        // Call handleAddNode to perform the initial node addition logic
         handleAddNode(nodeName);
-
-        // Trigger page refresh
         setRefreshPage(prev => !prev);
     }, [handleAddNode]);
 
-    // Function to handle manual page refresh
     const handleRefreshPage = async () => {
         try {
-            // Refresh user data and update connections for all nodes
             const userId = auth.currentUser.uid;
-            await fetchUserData(userId); // Fetch user data to update statistics
-
-            // Update connections bidirectionally for all nodes
+            await fetchUserData(userId);
             await updateConnectionsForAllNodes(userId);
-
-            // Trigger page refresh
             setRefreshPage(prev => !prev);
         } catch (error) {
             console.error('Error updating connections on page refresh:', error);
         }
     };
 
-    // Function to handle friend selection from search results
     const handleFriendSelect = async (friend) => {
         try {
             const userId = auth.currentUser.uid;
             const friendId = friend.id;
 
-            // Create a connection between the current user and the selected friend
             const userNodeRef = doc(db, `users/${userId}/nodes/${friendId}`);
             const friendNodeRef = doc(db, `users/${friendId}/nodes/${userId}`);
 
             await setDoc(userNodeRef, { connections: [friendId] }, { merge: true });
             await setDoc(friendNodeRef, { connections: [userId] }, { merge: true });
 
-            // Refresh page to reflect the new connection
             await handleRefreshPage();
         } catch (error) {
             console.error('Error adding friend:', error);
@@ -112,7 +98,6 @@ function MainPage({ handleAddNode }) {
         setShowSearchBar(false);
     };
 
-    // Mock notifications
     const notifications = [
         "John added a new connection.",
         "Emily added a new connection.",
@@ -132,6 +117,11 @@ function MainPage({ handleAddNode }) {
                 </h1>
             </div>
             {username && <h2 className="username-text">Welcome, {username}!</h2>}
+            
+            <div className="profile-link-container">
+                <Link to="/profile" className="profile-button">Profile</Link>
+            </div>
+
             <div className="statistics-box">
                 <div className="statistics-content">
                     <p>Friends: {friendsCount - 1}</p>
@@ -140,14 +130,19 @@ function MainPage({ handleAddNode }) {
                     <FontAwesomeIcon icon={faSync} className="refresh-icon" />
                 </button>
             </div>
+            
             {showSearchBar && (
                 <SearchBar
                     onFriendSelect={() => { /* Handle friend select */ }}
                     onFriendAdded={handleFriendAdded}
                     onClose={handleCloseSearchBar}
                 />
-            )}            <Graph key={refreshPage.toString()} /> {/* Key prop to trigger refresh */}
+            )}
+            <Graph key={refreshPage.toString()} />
             <AddNodeButton handleAddNode={handleAddNodeAndRefresh} />
+        
+            <ShareButton />
+
         </>
     );
 }

@@ -34,7 +34,7 @@ body, html {
 
 .statistics-box {
   position: absolute;
-  top: 20px;
+  top: 80px; /* Move down to create space */
   right: 20px;
   background-color: rgba(255, 255, 255, 0.8);
   border: 1px solid #ccc;
@@ -115,4 +115,30 @@ body, html {
 
 .notifications li:last-child {
   margin-bottom: 10px;
+}
+
+/* MainPage.css */
+.profile-link-container {
+  position: absolute;
+  top: 20px; /* Adjust top position as needed */
+  right: 20px; /* Right position for top-right alignment */
+  z-index: 1000; /* Ensure it is above other elements */
+}
+
+.profile-button {
+  text-decoration: none;
+  color: #ffffff; /* White text */
+  background-color: #b3b3b3; /* Blue color */
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  font-size: 16px;
+  display: inline-block;
+  text-align: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.profile-button:hover {
+  background-color: #8ba2ff; /* Darker blue on hover */
+  color: #ffffff; /* White text */
 }

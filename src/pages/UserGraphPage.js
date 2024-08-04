@@ -4,6 +4,7 @@ import { collection, doc, getDoc, getDocs, updateDoc, arrayUnion, setDoc } from 
 import { db } from '../firebase';
 import Graph from '../components/Graph';
 import { useAuth } from '../AuthContext';
+import FriendsGraph from '../components/FriendsGraph'
 
 function UserGraphPage() {
     const { userId } = useParams();
@@ -116,7 +117,7 @@ function UserGraphPage() {
                 Add
             </button>
             <h1>{userDisplayName}'s Network</h1>
-            <Graph userId={userId} friends={friendsData.map(friend => friend.id)} />
+            <FriendsGraph userId={userId} friends={friendsData.map(friend => friend.id)} />
         </div>
     );
 }

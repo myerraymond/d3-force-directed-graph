@@ -8,6 +8,7 @@ import { findMutualConnections } from '../scripts/findMutualConnections'; // Imp
 import './SearchBar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faTimes } from '@fortawesome/free-solid-svg-icons'; // Import the cancel icon
 
 function SearchBar({ onFriendSelect, onFriendAdded, onClose }) {
     const [searchQuery, setSearchQuery] = useState('');
@@ -167,6 +168,11 @@ function SearchBar({ onFriendSelect, onFriendAdded, onClose }) {
         setTooltipVisible(prev => !prev);
     };
 
+    const handleCancel = () => {
+        setSearchQuery('');
+        setSearchResults([]);
+    };
+
     return (
         <div className="search-bar">
             <div className="search-bar-header">
@@ -184,10 +190,17 @@ function SearchBar({ onFriendSelect, onFriendAdded, onClose }) {
                         </div>
                     )}
                 </div>
+                {searchQuery && (
+                    <button className="cancel-search" onClick={handleCancel}>
+                        <FontAwesomeIcon icon={faTimes} />
+                    </button>
+                )}
             </div>
-            <button onClick={handleSearch} disabled={loading || !searchQuery.trim()}>
-                Search
-            </button>
+            <div className="search-buttons">
+                <button onClick={handleSearch} disabled={loading || !searchQuery.trim()}>
+                    Search
+                </button>
+            </div>
             <div className="search-results">
                 {loading ? <p>Loading...</p> : (
                     searchResults.map(friend => (

@@ -6,6 +6,7 @@
   height: 100vh;
   background-color: #ffffff;
   font-family: Arial, sans-serif;
+  position: relative;
 }
 
 .welcome-container h1 {
@@ -53,4 +54,20 @@
 
 .signup-link:hover {
   background-color: #213688;
+}
+
+.discover-link {
+  text-decoration: none;
+  color: white;
+  background-color: #bebebe;
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin: 0.5rem;
+  transition: background-color 0.3s ease;
+  position: absolute;
+  bottom: 20px;
+}
+
+.discover-link:hover {
+  background-color: #6c6c6c;
 }

@@ -1,14 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AddNodeButton.css';
 import { db } from '../firebase';
-import { collection, addDoc, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { collection, doc, updateDoc, arrayUnion, getDocs } from 'firebase/firestore';
 import { useAuth } from '../AuthContext';
 
 function AddNodeButton({ handleAddNode }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [nodes, setNodes] = useState([]);
+    const [selectedNode1, setSelectedNode1] = useState('');
+    const [selectedNode2, setSelectedNode2] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { currentUser } = useAuth();
+
+    useEffect(() => {
+        if (isModalOpen) {
+            loadNodes();
+        }
+    }, [isModalOpen]);
+
+    const loadNodes = async () => {
+        setIsLoading(true);
+        try {
+            const querySnapshot = await getDocs(collection(db, `users/${currentUser.uid}/nodes`));
+            const nodesList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setNodes(nodesList);
+            setIsLoading(false);
+        } catch (error) {
+            setIsLoading(false);
+            console.error("Error loading nodes: ", error);
+        }
+    };
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -16,43 +37,34 @@ function AddNodeButton({ handleAddNode }) {
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        setSearchQuery('');
+        setSelectedNode1('');
+        setSelectedNode2('');
         setIsLoading(false);
     };
 
-    const handleAddNodeClick = async () => {
-        try {
-            if (searchQuery.trim() !== '') {
-                setIsLoading(true);
-
-                const newNode = {
-                    label: searchQuery.trim(),
-                    profilePicture: '',
-                    connections: []  // Initialize connections as an empty array
-                };
-
-                // Add new node
-                const nodeRef = await addDoc(collection(db, `users/${currentUser.uid}/nodes`), newNode);
-                newNode.id = nodeRef.id;
-
-                // Update the current user's node to add the new node's ID to connections
-                const userNodeRef = doc(db, `users/${currentUser.uid}/nodes/${currentUser.uid}`);
-                await updateDoc(userNodeRef, {
-                    connections: arrayUnion(nodeRef.id)
+    const handleAddConnectionClick = async () => {
+        if (selectedNode1 && selectedNode2 && selectedNode1 !== selectedNode2) {
+            setIsLoading(true);
+            try {
+                // Add each node to the other node's connections
+                const nodeRef1 = doc(db, `users/${currentUser.uid}/nodes/${selectedNode1}`);
+                const nodeRef2 = doc(db, `users/${currentUser.uid}/nodes/${selectedNode2}`);
+                
+                await updateDoc(nodeRef1, {
+                    connections: arrayUnion(selectedNode2)
                 });
 
-                // Update the new node to include the current user in its connections
-                await updateDoc(nodeRef, {
-                    connections: arrayUnion(currentUser.uid)
+                await updateDoc(nodeRef2, {
+                    connections: arrayUnion(selectedNode1)
                 });
 
-                handleAddNode(newNode);
+                handleAddNode({ id: selectedNode1 }, { id: selectedNode2 });
                 setIsLoading(false);
                 handleCloseModal();
+            } catch (error) {
+                setIsLoading(false);
+                console.error("Error adding connection: ", error);
             }
-        } catch (error) {
-            setIsLoading(false);
-            console.error("Error adding node: ", error);
         }
     };
 
@@ -63,14 +75,37 @@ function AddNodeButton({ handleAddNode }) {
                 <div className="modal">
                     <div className="modal-content">
                         <span className="close" onClick={handleCloseModal}>&times;</span>
-                        <h2>Add a connection</h2>
-                        <input
-                            type="text"
-                            placeholder="New Connection Name"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                        <button onClick={handleAddNodeClick}>
+                        <h2>Add a connection between nodes</h2>
+                        <div className="dropdown-container">
+                            <label htmlFor="node1">Select Node 1</label>
+                            <select
+                                id="node1"
+                                value={selectedNode1}
+                                onChange={(e) => setSelectedNode1(e.target.value)}
+                            >
+                                <option value="">Select a node</option>
+                                {nodes.map(node => (
+                                    <option key={node.id} value={node.id}>{node.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="dropdown-container">
+                            <label htmlFor="node2">Select Node 2</label>
+                            <select
+                                id="node2"
+                                value={selectedNode2}
+                                onChange={(e) => setSelectedNode2(e.target.value)}
+                            >
+                                <option value="">Select a node</option>
+                                {nodes.map(node => (
+                                    <option key={node.id} value={node.id}>{node.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <button 
+                            onClick={handleAddConnectionClick} 
+                            disabled={isLoading || !selectedNode1 || !selectedNode2 || selectedNode1 === selectedNode2}
+                        >
                             {isLoading ? 'Adding...' : 'Add Connection'}
                         </button>
                     </div>
