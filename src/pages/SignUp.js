@@ -2,34 +2,58 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { auth, db, storage } from '../firebase';  // Import Firebase services
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, addDoc, collection } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import './SignUp.css';
 
 function SignUp() {
     const navigate = useNavigate();
-    const [username, setUsername] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
     const [profilePicture, setProfilePicture] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const defaultFriendProfilePictureURL = '../../1.png'; // Set this to your actual default image URL
-
     const handleFileChange = (e) => {
-        if (e.target.files[0]) {
-            setProfilePicture(e.target.files[0]);
+        const file = e.target.files[0];
+        if (file) {
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (allowedTypes.includes(file.type)) {
+                setProfilePicture(file);
+                setError(null); // Clear any previous errors
+            } else {
+                setError('Please upload a valid image file (jpg, png, gif).');
+            }
         }
+    };
+
+    const isUsernameTaken = async (username) => {
+        const usernameDoc = await getDoc(doc(db, 'usernames', username));
+        return usernameDoc.exists();
     };
 
     const handleSignUp = async (e) => {
         e.preventDefault();
         setLoading(true); // Set loading to true when signup starts
+
         try {
+            // Check if the username is taken
+            if (await isUsernameTaken(username)) {
+                setError('Username is already taken. Please choose another one.');
+                setLoading(false);
+                return;
+            }
+
             // Create user with email and password
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+
+            // Full name and shortened name
+            const fullName = `${firstName} ${lastName}`;
+            const shortenedName = `${firstName} ${lastName.charAt(0)}.`;
 
             // Upload profile picture to Firebase Storage
             let profilePictureURL = '';
@@ -43,22 +67,22 @@ function SignUp() {
             await setDoc(doc(db, 'users', user.uid), {
                 email: user.email,
                 displayName: username,
+                fullName: fullName,
+                shortenedName: shortenedName,  // Store shortened name
                 profilePicture: profilePictureURL,
+            });
+
+            // Save username to Firestore
+            await setDoc(doc(db, 'usernames', username), {
+                uid: user.uid
             });
 
             // Create primary node for the user with user's UID as the node ID
             const primaryNodeRef = doc(db, `users/${user.uid}/nodes`, user.uid);
             await setDoc(primaryNodeRef, {
-                label: `${username}`,
+                label: username,
                 profilePicture: profilePictureURL,
                 connections: []
-            });
-
-            // Create an initial friend node titled "friend"
-            await addDoc(collection(db, `users/${user.uid}/nodes`), {
-                label: 'friend',
-                profilePicture: defaultFriendProfilePictureURL,
-                connections: [user.uid]  // Connect to the primary node
             });
 
             // Redirect to the main page
@@ -76,10 +100,46 @@ function SignUp() {
             {error && <p className="error">{error}</p>}
             {loading && <p className="loading">Signing up, please wait... Don't refresh this page.</p>}
             <form onSubmit={handleSignUp}>
-                <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required />
-                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                <input type="file" onChange={handleFileChange} />
+                <input 
+                    type="text" 
+                    placeholder="First Name" 
+                    value={firstName} 
+                    onChange={(e) => setFirstName(e.target.value)} 
+                    required 
+                />
+                <input 
+                    type="text" 
+                    placeholder="Last Name" 
+                    value={lastName} 
+                    onChange={(e) => setLastName(e.target.value)} 
+                    required 
+                />
+                <input 
+                    type="email" 
+                    placeholder="Email" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    required 
+                />
+                <input 
+                    type="password" 
+                    placeholder="Password" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    required 
+                />
+                <input 
+                    type="text" 
+                    placeholder="Username" 
+                    value={username} 
+                    onChange={(e) => setUsername(e.target.value)} 
+                    required 
+                />
+                <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleFileChange} 
+                />
                 <button type="submit" disabled={loading}>Sign Up</button>
             </form>
             <div className="links">

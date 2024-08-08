@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { auth, db } from '../firebase';
-import { arrayRemove, collection, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { arrayRemove, collection, getDocs, updateDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import "./Graph.css";
-import LinkModal from './LinkModal';
 
 const defaultImage = "./0.png";
 const primaryNode = "John";
@@ -19,9 +18,13 @@ const Graph = ({ userId, friends }) => {
   });
 
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
-  const [modalOpen, setModalOpen] = useState(false); // State for modal visibility
-  const [selectedNode, setSelectedNode] = useState(null); // State to track selected node
-  const [loading, setLoading] = useState(false); // State for loading indicator
+  const [modalOpen, setModalOpen] = useState(false);
+  const [primaryNodeModalOpen, setPrimaryNodeModalOpen] = useState(false);
+  const [expandedNetworkModalOpen, setExpandedNetworkModalOpen] = useState(false);
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [expandedNodes, setExpandedNodes] = useState(new Set());
+  const [expandedLinks, setExpandedLinks] = useState(new Set());
 
   useEffect(() => {
     const handleResize = () => {
@@ -37,20 +40,20 @@ const Graph = ({ userId, friends }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    const fetchData = async (uid) => {
-      const nodesQuery = collection(db, `users/${uid}/nodes`);
-      const nodesSnapshot = await getDocs(nodesQuery);
-
+  const fetchData = async (uid) => {
+    try {
+      const nodesCollectionRef = collection(db, `users/${uid}/nodes`);
+      const nodesSnapshot = await getDocs(nodesCollectionRef);
+  
       const nodeMap = {};
       nodesSnapshot.docs.forEach(doc => {
         const node = { id: doc.id, ...doc.data() };
         nodeMap[node.id] = node;
       });
-
+  
       const nodes = Object.values(nodeMap);
       const links = [];
-
+  
       nodes.forEach(node => {
         if (node.connections) {
           node.connections.forEach(connectionId => {
@@ -66,9 +69,22 @@ const Graph = ({ userId, friends }) => {
         }
       });
 
-      setGraphData({ nodes, links });
-    };
+      const userDetailsPromises = nodes.map(async (node) => {
+        const userRef = doc(db, `users/${node.id}`);
+        const userDoc = await getDoc(userRef);
+        return { id: node.id, ...node, ...userDoc.data() };
+      });
+      const detailedNodes = await Promise.all(userDetailsPromises);
 
+      setGraphData({ nodes: detailedNodes, links });
+      setExpandedNodes(new Set());
+      setExpandedLinks(new Set());
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
     if (userId) {
       fetchData(userId);
     } else {
@@ -154,6 +170,9 @@ const Graph = ({ userId, friends }) => {
       .on("click", (event, d) => {
         setSelectedNode(d);
         setModalOpen(true);
+        if (!expandedNodes.has(d.id)) {
+          fetchData(d.id, 2);
+        }
       });
 
     node
@@ -200,6 +219,10 @@ const Graph = ({ userId, friends }) => {
       .attr("r", 20);
   }, [dimensions, graphData]);
 
+  const refreshGraph = () => {
+    window.location.reload(); // Reloads the page
+  };
+
   const closeModal = () => {
     setModalOpen(false);
     setSelectedNode(null);
@@ -208,25 +231,21 @@ const Graph = ({ userId, friends }) => {
   const handleDeleteNode = async () => {
     if (!selectedNode) return;
 
-    setLoading(true); // Start loading indicator
+    setLoading(true);
 
     try {
       const userUid = auth.currentUser.uid;
 
-      // Retrieve all nodes for the current user
       const nodesQuery = collection(db, `users/${userUid}/nodes`);
       const nodesSnapshot = await getDocs(nodesQuery);
       const nodes = nodesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-      // Get the IDs of nodes that are connected to the node being deleted
       const connectedNodeIds = nodes
         .filter(node => node.connections && node.connections.includes(selectedNode.id))
         .map(node => node.id);
 
-      // Delete the node and its connections
       await deleteDoc(doc(db, `users/${userUid}/nodes`, selectedNode.id));
 
-      // Remove the deleted node's connections from other nodes
       for (const id of connectedNodeIds) {
         const nodeRef = doc(db, `users/${userUid}/nodes`, id);
         await updateDoc(nodeRef, {
@@ -234,28 +253,104 @@ const Graph = ({ userId, friends }) => {
         });
       }
 
-      // Update local state to remove the node and its links
       const updatedNodes = graphData.nodes.filter(node => node.id !== selectedNode.id);
       const updatedLinks = graphData.links.filter(link => link.source.id !== selectedNode.id && link.target.id !== selectedNode.id);
 
       setGraphData({ nodes: updatedNodes, links: updatedLinks });
-      closeModal(); // Close modal after deletion
+      closeModal();
     } catch (error) {
       console.error("Error deleting node:", error);
     } finally {
-      setLoading(false); // Stop loading indicator
+      setLoading(false);
     }
+  };
+
+  const onExpandNetwork = async () => {
+    if (!selectedNode) return;
+
+    setLoading(true);
+
+    try {
+      const nodesQuery = collection(db, `users/${selectedNode.id}/nodes`);
+      const nodesSnapshot = await getDocs(nodesQuery);
+
+      const nodeMap = {};
+      nodesSnapshot.docs.forEach(doc => {
+        const node = { id: doc.id, ...doc.data() };
+        nodeMap[node.id] = node;
+      });
+
+      const nodes = Object.values(nodeMap);
+      const links = [];
+
+      nodes.forEach(node => {
+        if (node.connections) {
+          node.connections.forEach(connectionId => {
+            if (nodeMap[connectionId]) {
+              links.push({
+                source: node.id,
+                target: connectionId,
+                type: 'friend',
+                strength: 1
+              });
+            }
+          });
+        }
+      });
+
+      setGraphData(prev => {
+        const existingNodeIds = new Set(prev.nodes.map(n => n.id));
+        const existingLinkIds = new Set(prev.links.map(link => `${link.source}-${link.target}`));
+
+        const updatedNodes = [...prev.nodes, ...nodes.filter(node => !existingNodeIds.has(node.id))];
+        const updatedLinks = [
+          ...prev.links,
+          ...links.filter(link => !existingLinkIds.has(`${link.source}-${link.target}`))
+        ];
+
+        return { nodes: updatedNodes, links: updatedLinks };
+      });
+
+      setExpandedNodes(prev => new Set([...prev, selectedNode.id, ...nodes.map(n => n.id)]));
+      setExpandedLinks(prev => new Set([...prev, ...links.map(link => `${link.source}-${link.target}`)]));
+    } catch (error) {
+      console.error("Error expanding network:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openPrimaryNodeModal = () => {
+    setPrimaryNodeModalOpen(true);
+  };
+
+  const closePrimaryNodeModal = () => {
+    setPrimaryNodeModalOpen(false);
+  };
+
+  const openExpandedNetworkModal = () => {
+    setExpandedNetworkModalOpen(true);
+  };
+
+  const closeExpandedNetworkModal = () => {
+    setExpandedNetworkModalOpen(false);
   };
 
   return (
     <div ref={containerRef} className="graph-container">
+      <button onClick={refreshGraph} className="refresh-btn">
+        Refresh
+      </button>
       <svg ref={svgRef} width={dimensions.width} height={dimensions.height}></svg>
       {modalOpen && selectedNode && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>Node Information</h2>
-            <p>ID: {selectedNode.id}</p>
-            <p>Label: {selectedNode.label}</p>
+            <img src={selectedNode.profilePicture || defaultImage} alt={selectedNode.label} className="modal-profile-picture"/>
+            <p>{selectedNode.displayName}</p>
+            <p>Name: {selectedNode.shortenedName}</p>
+            <button onClick={onExpandNetwork} className="expand-network-btn">
+              Expand Network
+            </button>
             <button onClick={handleDeleteNode} disabled={loading}>
               {loading ? "Deleting..." : "Delete"}
             </button>

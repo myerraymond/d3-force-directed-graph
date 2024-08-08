@@ -16,7 +16,6 @@ import ShareButton from '../components/ShareButton'; // Import the ShareButton
 function MainPage({ handleAddNode }) {
     const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(true);
-    const [refreshPage, setRefreshPage] = useState(false);
     const [friendsCount, setFriendsCount] = useState(0);
     const [showSearchBar, setShowSearchBar] = useState(true);
 
@@ -59,7 +58,7 @@ function MainPage({ handleAddNode }) {
 
     const handleAddNodeAndRefresh = useCallback(async (nodeName) => {
         handleAddNode(nodeName);
-        setRefreshPage(prev => !prev);
+        setFriendsCount(prev => prev + 1);  // Increment friendsCount to trigger refresh
     }, [handleAddNode]);
 
     const handleRefreshPage = async () => {
@@ -67,7 +66,7 @@ function MainPage({ handleAddNode }) {
             const userId = auth.currentUser.uid;
             await fetchUserData(userId);
             await updateConnectionsForAllNodes(userId);
-            setRefreshPage(prev => !prev);
+            setFriendsCount(prev => prev + 1);  // Increment friendsCount to trigger refresh
         } catch (error) {
             console.error('Error updating connections on page refresh:', error);
         }
@@ -116,33 +115,37 @@ function MainPage({ handleAddNode }) {
                     <span className="sub-title">.app</span>
                 </h1>
             </div>
-            {username && <h2 className="username-text">Welcome, {username}!</h2>}
-            
+            {username && <h2 className="username-text">{username}</h2>}
+
             <div className="profile-link-container">
                 <Link to="/profile" className="profile-button">Profile</Link>
             </div>
 
-            <div className="statistics-box">
+            {/* <div className="statistics-box">
                 <div className="statistics-content">
                     <p>Friends: {friendsCount - 1}</p>
                 </div>
                 <button onClick={handleRefreshPage} className="refresh-button">
                     <FontAwesomeIcon icon={faSync} className="refresh-icon" />
                 </button>
-            </div>
-            
+            </div> */}
+
             {showSearchBar && (
                 <SearchBar
-                    onFriendSelect={() => { /* Handle friend select */ }}
+                    onFriendSelect={handleFriendSelect}
                     onFriendAdded={handleFriendAdded}
                     onClose={handleCloseSearchBar}
                 />
             )}
-            <Graph key={refreshPage.toString()} />
-            <AddNodeButton handleAddNode={handleAddNodeAndRefresh} />
-        
-            <ShareButton />
+            <Graph key={friendsCount} />
+            <div class="add-section">
+                <h3>Sponsored</h3>
+                <p>Get a 20% discount on your next purchase at <a href="https://example.com" target="_blank" class="ad-link">Example Store</a>! Use code: SAVE20 at checkout.</p>
+                <p>Hurry, offer ends soon!</p>
+            </div>
 
+            <ShareButton username={username} />
+            <AddNodeButton handleAddNode={handleAddNodeAndRefresh} />
         </>
     );
 }

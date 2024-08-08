@@ -12,7 +12,7 @@ function Welcome() {
       <Link to="/login" className="login-link">Login</Link>
       <p>or</p>
       <Link to="/signup" className="signup-link">Sign Up</Link>
-      <Link to="/discover" className="discover-link">discover</Link>
+      <a href="/discover" target="_blank" rel="noopener noreferrer" className="discover-link">discover</a>
     </div>
   );
 }

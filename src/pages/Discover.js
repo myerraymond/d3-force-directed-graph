@@ -4,7 +4,6 @@ import './Discover.css';
 function Discover() {
   return (
     <div className="discover-container">
-      <h1 className="title">Discover</h1>
       <p className="description">Explore new connections and expand your network.</p>
       <div className="features">
         <div className="feature">

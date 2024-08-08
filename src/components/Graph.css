@@ -1,11 +1,11 @@
-/* Graph.css */
-
+/* General SVG Styles */
 svg {
   width: 100%;
   height: 100%;
   overflow: visible;
 }
 
+/* Tooltip Styling */
 .tooltip {
   position: absolute;
   background-color: rgba(255, 255, 255, 0.9);
@@ -39,12 +39,6 @@ svg {
   background-color: #f4845f;
 }
 
-.tooltip-close:focus,
-.tooltip-delete:focus,
-.tooltip-add-link:focus {
-  outline: none;
-}
-
 .tooltip-add-link {
   background-color: #f27059;
 }
@@ -53,10 +47,7 @@ svg {
   background-color: #f79d65;
 }
 
-.tooltip-add-link:focus {
-  outline: none;
-}
-
+/* Node and Link Styles */
 .links line {
   stroke: #999;
   stroke-opacity: 0.6;
@@ -77,68 +68,27 @@ svg {
 
 .nodes .selected {
   fill: #f25c54;
+  stroke: #000;
+  stroke-width: 2px;
 }
 
-.clip-circle {
-  fill: none;
-  pointer-events: all;
-}
-
-.nodes .dragging {
-  fill: #f4845f;
+/* Highlight Network Styles */
+.nodes .highlighted {
+  fill: #f7b267;
   stroke: #fff;
+  stroke-width: 2px;
 }
 
-.tooltip .close {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  cursor: pointer;
+.nodes .dimmed {
+  fill: #ddd;
 }
 
-.tooltip .close:hover {
-  color: #f25c54;
+.links .highlighted {
+  stroke: #f7b267;
+  stroke-opacity: 0.8;
 }
 
-.tooltip .close:focus {
-  outline: none;
-}
-
-.tooltip .content {
-  margin-bottom: 5px;
-}
-
-.tooltip .buttons {
-  display: flex;
-  justify-content: space-between;
-}
-
-.tooltip .buttons button {
-  padding: 8px 12px;
-  border: none;
-  background-color: #f27059;
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.tooltip .buttons button:hover {
-  background-color: #f4845f;
-}
-
-.tooltip .buttons button:focus {
-  outline: none;
-}
-
-.tooltip .buttons .close-btn {
-  background-color: #999;
-}
-
-.tooltip .buttons .close-btn:hover {
-  background-color: #ccc;
-}
-
-
+/* Modal and Loading Styles */
 .graph-container {
   position: relative;
   width: 100%;
@@ -164,6 +114,60 @@ svg {
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1001;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+}
+
+.modal-content img {
+  border-radius: 50%;
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.modal-content h2 {
+  margin: 0 0 10px;
+}
+
+.modal-content p {
+  margin: 5px 0;
+}
+
+.modal-content button {
+  margin: 5px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.modal-content .expand-network-btn {
+  background-color: #f27059;
+}
+
+.modal-content .expand-network-btn:hover {
+  background-color: #f79d65;
+}
+
+.modal-content .delete-btn {
+  background-color: #ff6b6b;
+}
+
+.modal-content .delete-btn:hover {
+  background-color: #ff4d4d;
+}
+
+.modal-content .close-btn {
+  background-color: #999;
+}
+
+.modal-content .close-btn:hover {
+  background-color: #ccc;
 }
 
 .loading-overlay {
@@ -191,4 +195,35 @@ svg {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Breadcrumb Styles */
+.breadcrumb {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.breadcrumb-item {
+  cursor: pointer;
+  color: #007bff;
+}
+
+.breadcrumb-item:hover {
+  text-decoration: underline;
+}
+
+.refresh-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.refresh-btn:hover {
+  background-color: #0056b3;
 }

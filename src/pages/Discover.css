@@ -1,42 +1,44 @@
 .discover-container {
-    padding: 20px;
-    text-align: center;
-    background-color: #f7b267;
-    height: 100vh;
-  }
-  
-  .title {
-    font-size: 2.5rem;
-    color: #f25c54;
-  }
-  
-  .description {
-    font-size: 1.5rem;
-    color: #f27059;
-    margin: 20px 0;
-  }
-  
-  .features {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 30px;
-  }
-  
-  .feature {
-    background-color: #f79d65;
-    padding: 20px;
-    border-radius: 8px;
-    width: 30%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .feature h2 {
-    font-size: 1.5rem;
-    color: #f25c54;
-  }
-  
-  .feature p {
-    font-size: 1rem;
-    color: #fff;
-  }
-  
+  padding: 20px;
+  text-align: center;
+  background-color: #f8f9fa; /* Light grey background for a clean look */
+  min-height: 100vh;
+}
+
+.title {
+  font-size: 2.5rem;
+  color: #343a40; /* Dark grey for the title */
+}
+
+.description {
+  font-size: 1.25rem; /* Slightly smaller for better balance */
+  color: #6c757d; /* Medium grey for description text */
+  margin: 20px 0;
+}
+
+.features {
+  display: flex;
+  flex-direction: column; /* Stacked vertically for simplicity */
+  align-items: center;
+  gap: 20px; /* Space between features */
+  margin-top: 30px;
+}
+
+.feature {
+  background-color: #ffffff; /* White background for each feature */
+  padding: 20px;
+  border-radius: 8px;
+  width: 80%; /* Increased width for better readability */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 400px; /* Maximum width for better layout on larger screens */
+}
+
+.feature h2 {
+  font-size: 1.5rem;
+  color: #343a40; /* Dark grey for feature titles */
+}
+
+.feature p {
+  font-size: 1rem;
+  color: #495057; /* Slightly lighter grey for feature descriptions */
+}

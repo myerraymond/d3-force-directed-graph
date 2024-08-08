@@ -2,14 +2,14 @@
 
 .add-node-btn {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: #f25c54; /* Red color */
+    bottom: 15px;
+    right: 15px;
+    background-color: #555555;
     color: white;
     border: none;
     border-radius: 50%;
-    width: 60px; /* Increased size for better click area */
-    height: 60px;
+    width: 50px; /* Increased size for better click area */
+    height: 50px;
     font-size: 28px; /* Larger icon */
     display: flex;
     align-items: center;
@@ -21,7 +21,7 @@
 }
 
 .add-node-btn:hover {
-    background-color: #f27059; /* Darker red on hover */
+    background-color: #000000; /* Darker red on hover */
     transform: scale(1.1); /* Slightly enlarge on hover */
 }
 
