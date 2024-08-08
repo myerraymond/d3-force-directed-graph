@@ -8,7 +8,6 @@ import { faSync } from '@fortawesome/free-solid-svg-icons';
 import Graph from "../components/Graph";
 import './MainPage.css';
 import AddNodeButton from '../components/AddNodeButton';
-import Notifications from '../components/Notifications';
 import SearchBar from '../components/SearchBar';
 import { Link } from 'react-router-dom';
 import ShareButton from '../components/ShareButton'; // Import the ShareButton
@@ -97,12 +96,6 @@ function MainPage({ handleAddNode }) {
         setShowSearchBar(false);
     };
 
-    const notifications = [
-        "John added a new connection.",
-        "Emily added a new connection.",
-        "You have 5 new friend requests.",
-    ];
-
     if (loading) {
         return <p>Loading...</p>;
     }
@@ -121,15 +114,6 @@ function MainPage({ handleAddNode }) {
                 <Link to="/profile" className="profile-button">Profile</Link>
             </div>
 
-            {/* <div className="statistics-box">
-                <div className="statistics-content">
-                    <p>Friends: {friendsCount - 1}</p>
-                </div>
-                <button onClick={handleRefreshPage} className="refresh-button">
-                    <FontAwesomeIcon icon={faSync} className="refresh-icon" />
-                </button>
-            </div> */}
-
             {showSearchBar && (
                 <SearchBar
                     onFriendSelect={handleFriendSelect}
@@ -138,11 +122,11 @@ function MainPage({ handleAddNode }) {
                 />
             )}
             <Graph key={friendsCount} />
-            <div class="add-section">
+            {/* <div class="add-section">
                 <h3>Sponsored</h3>
                 <p>Get a 20% discount on your next purchase at <a href="https://example.com" target="_blank" class="ad-link">Example Store</a>! Use code: SAVE20 at checkout.</p>
                 <p>Hurry, offer ends soon!</p>
-            </div>
+            </div> */}
 
             <ShareButton username={username} />
             <AddNodeButton handleAddNode={handleAddNodeAndRefresh} />

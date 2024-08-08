@@ -76,9 +76,10 @@ const Graph = ({ userId, friends }) => {
       });
       const detailedNodes = await Promise.all(userDetailsPromises);
 
+      setExpandedNodes(new Set(detailedNodes.map(node => node.id)));
+      setExpandedLinks(new Set(links.map(link => `${link.source}-${link.target}`)));
+  
       setGraphData({ nodes: detailedNodes, links });
-      setExpandedNodes(new Set());
-      setExpandedLinks(new Set());
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -217,10 +218,12 @@ const Graph = ({ userId, friends }) => {
       .attr("id", "clip-circle")
       .append("circle")
       .attr("r", 20);
-  }, [dimensions, graphData]);
+  }, [dimensions, graphData, expandedNodes]);
 
   const refreshGraph = () => {
-    window.location.reload(); // Reloads the page
+    if (userId) {
+          setGraphData({ nodes: [], links: [] });
+    }
   };
 
   const closeModal = () => {
