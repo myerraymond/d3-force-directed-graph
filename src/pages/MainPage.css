@@ -3,33 +3,43 @@ body, html {
   padding: 0;
   height: 100%;
   overflow: hidden; /* Prevent scrolling */
-  background: linear-gradient(to top, #f25c540e, #ffffff); /* Blue to white gradient */
+  background: linear-gradient(to top, #00642d28, #ffffff); /* Blue to white gradient */
   font-family: Arial, sans-serif;
 }
 
 .header-container {
-  padding: 20px;
+  padding: 10px; /* Reduced padding */
   text-align: center;
   color: #fff;
+  position: absolute;
+  top: 10px; /* Position at the top */
+  width: 100%;
+}
+
+.header-logo {
+  max-width: 200px; /* Adjusted size */
+  height: auto;
+  display: block;
+  margin: 0 auto;
 }
 
 .header-text {
-  font-size: 2.5rem;
+  font-size: 1.5rem; /* Smaller font size */
   font-weight: bold;
-  color: #f25c54; /* Red */
+  color: #00642D; /* Green */
 }
 
 .sub-title {
-  font-size: 2.5rem;
+  font-size: 1.5rem; /* Smaller font size */
   font-weight: normal;
-  color: #f27059; /* Light Red */
+  color: #000000; /* Black */
 }
 
 .username-text {
   text-align: center;
-  font-size: 1.5em;
+  font-size: 1.2em;
   margin: 0.5em 0;
-  color: #f4845f; /* Light Orange */
+  color: #21a663;
 }
 
 .statistics-box {
@@ -176,5 +186,3 @@ body, html {
 .ad-link:hover {
   text-decoration: underline; /* Underline on hover for better user experience */
 }
-
-

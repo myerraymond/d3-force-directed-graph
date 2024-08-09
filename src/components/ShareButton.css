@@ -17,8 +17,9 @@
 }
 
 .share-button:hover {
-    background-color: #000000;
-    transform: scale(1.1);
+    background-color: #99d98c;
+    color: black;
+    transform: scale(1.2);
 }
 
 .share-icon {
@@ -73,4 +74,23 @@
 .cancel-share-button {
     background-color: #f44336;
     color: white;
+}
+
+/* Additional Styling for Better Layout and Responsiveness */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 90%; /* Adjust width for smaller screens */
+        padding: 20px;
+    }
+
+    .add-node-btn {
+        width: 50px; /* Adjust button size for smaller screens */
+        height: 50px;
+        font-size: 24px;
+    }
+
+    .modal-content button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
 }

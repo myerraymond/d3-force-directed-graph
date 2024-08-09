@@ -1,0 +1,40 @@
+.header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 1.8rem;
+    color: #333;
+    margin: 0;
+}
+
+.header button {
+    background-color: #f25c54;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin: 0 5px;
+}
+
+.header button:hover {
+    background-color: #d04a43;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.header button:active {
+    background-color: #b03a31;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transform: translateY(2px);
+}
+
+.header button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 87, 87, 0.5);
+}

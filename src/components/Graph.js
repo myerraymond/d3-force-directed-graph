@@ -150,8 +150,8 @@ const Graph = ({ userId, friends }) => {
       .data(graphData.links)
       .enter()
       .append("line")
-      .attr("stroke", "#999")
-      .attr("stroke-opacity", 0.6)
+      .attr("stroke", "#777")
+      .attr("stroke-opacity", 0.8)
       .attr("stroke-width", 1);
 
     const node = g
@@ -323,27 +323,13 @@ const Graph = ({ userId, friends }) => {
     }
   };
 
-  const openPrimaryNodeModal = () => {
-    setPrimaryNodeModalOpen(true);
-  };
-
-  const closePrimaryNodeModal = () => {
-    setPrimaryNodeModalOpen(false);
-  };
-
-  const openExpandedNetworkModal = () => {
-    setExpandedNetworkModalOpen(true);
-  };
-
-  const closeExpandedNetworkModal = () => {
-    setExpandedNetworkModalOpen(false);
-  };
+  
 
   return (
     <div ref={containerRef} className="graph-container">
-      <button onClick={refreshGraph} className="refresh-btn">
+      {/* <button onClick={refreshGraph} className="refresh-btn">
         Refresh
-      </button>
+      </button> */}
       <svg ref={svgRef} width={dimensions.width} height={dimensions.height}></svg>
       {modalOpen && selectedNode && (
         <div className="modal-overlay">

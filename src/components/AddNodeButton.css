@@ -21,8 +21,9 @@
 }
 
 .add-node-btn:hover {
-    background-color: #000000; /* Darker red on hover */
-    transform: scale(1.1); /* Slightly enlarge on hover */
+    background-color: #99d98c;
+    color: black;
+    transform: scale(1.2); /* Slightly enlarge on hover */
 }
 
 .modal {
@@ -83,12 +84,12 @@
 }
 
 .dropdown-container select:focus {
-    border-color: #f25c54; /* Highlight border on focus */
+    border-color: #95d5b2; /* Highlight border on focus */
     outline: none;
 }
 
 .modal-content button {
-    background-color: #f7b267; /* Orange */
+    background-color: #1b4332; /* Orange */
     color: white;
     border: none;
     padding: 12px 24px; /* Increased padding */
@@ -100,7 +101,7 @@
 }
 
 .modal-content button:hover {
-    background-color: #f79d65; /* Darker orange on hover */
+    background-color: #76c893; /* Darker orange on hover */
 }
 
 /* Additional Styling for Better Layout and Responsiveness */

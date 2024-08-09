@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { collection, doc, getDoc, getDocs, updateDoc, arrayUnion, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import Graph from '../components/Graph';
+import FriendsGraph from '../components/FriendsGraph';
 import { useAuth } from '../AuthContext';
-import FriendsGraph from '../components/FriendsGraph'
+import './UserGraphPage.css'; // Import the CSS file
 
 function UserGraphPage() {
     const { userId } = useParams();
@@ -109,14 +109,17 @@ function UserGraphPage() {
     }
 
     return (
-        <div>
-            <button onClick={handleBack} style={{ marginBottom: '20px' }}>
-                Back
-            </button>
-            <button onClick={handleAdd} style={{ marginBottom: '20px', marginLeft: '10px' }}>
-                Add
-            </button>
-            <h1>{userDisplayName}'s Network</h1>
+        <div className="user-graph-page">
+            <div className="header">
+                <button onClick={handleBack}>
+                    Back
+                </button>
+                <button onClick={handleAdd}>
+                    Add
+                </button>
+                <h1>{userDisplayName}'s Network</h1>
+
+            </div>
             <FriendsGraph userId={userId} friends={friendsData.map(friend => friend.id)} />
         </div>
     );

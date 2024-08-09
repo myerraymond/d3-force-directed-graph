@@ -11,6 +11,7 @@ import AddNodeButton from '../components/AddNodeButton';
 import SearchBar from '../components/SearchBar';
 import { Link } from 'react-router-dom';
 import ShareButton from '../components/ShareButton'; // Import the ShareButton
+import logo from '../assets/logo.png'; // Import your logo
 
 function MainPage({ handleAddNode }) {
     const [username, setUsername] = useState('');
@@ -88,49 +89,34 @@ function MainPage({ handleAddNode }) {
         }
     };
 
-    const handleFriendAdded = () => {
-        // Refresh graph or other actions
+    const handleFriendAdded = async () => {
+        await handleRefreshPage();
     };
-
-    const handleCloseSearchBar = () => {
-        setShowSearchBar(false);
-    };
-
-    if (loading) {
-        return <p>Loading...</p>;
-    }
 
     return (
-        <>
+        <div className="main-page">
             <div className="header-container">
-                <h1>
-                    <span className="header-text">net-work</span>
-                    <span className="sub-title">.app</span>
-                </h1>
+                <img src={logo} alt="Logo" className="header-logo" />
+                <div className="username-text">
+                    Welcome, {username}
+                </div>
             </div>
-            {username && <h2 className="username-text">{username}</h2>}
-
             <div className="profile-link-container">
                 <Link to="/profile" className="profile-button">Profile</Link>
             </div>
-
-            {showSearchBar && (
-                <SearchBar
-                    onFriendSelect={handleFriendSelect}
-                    onFriendAdded={handleFriendAdded}
-                    onClose={handleCloseSearchBar}
-                />
-            )}
-            <Graph key={friendsCount} />
-            {/* <div class="add-section">
-                <h3>Sponsored</h3>
-                <p>Get a 20% discount on your next purchase at <a href="https://example.com" target="_blank" class="ad-link">Example Store</a>! Use code: SAVE20 at checkout.</p>
-                <p>Hurry, offer ends soon!</p>
+            <div className="graph-container">
+                <Graph userId={auth.currentUser?.uid} />
+            </div>
+            
+            <AddNodeButton onAddNode={handleAddNodeAndRefresh} />
+            <SearchBar showSearchBar={showSearchBar} setShowSearchBar={setShowSearchBar} handleFriendSelect={handleFriendSelect} />
+            <ShareButton /> {/* Add the ShareButton component */}
+            {/* <div className="add-section">
+                <h3>Advertisement</h3>
+                <p>Check out our new features!</p>
+                <a href="#" className="ad-link">Learn More</a>
             </div> */}
-
-            <ShareButton username={username} />
-            <AddNodeButton handleAddNode={handleAddNodeAndRefresh} />
-        </>
+        </div>
     );
 }
 

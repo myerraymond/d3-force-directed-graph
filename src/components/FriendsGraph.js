@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { auth, db } from '../firebase';
-import { collection, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, deleteDoc, doc, setDoc, getDoc, arrayUnion } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import "./Graph.css";
 
@@ -20,6 +20,8 @@ const FriendsGraph = ({ userId, friends }) => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [modalOpen, setModalOpen] = useState(false); // State for modal visibility
   const [selectedNode, setSelectedNode] = useState(null); // State to track selected node
+  const [newConnection, setNewConnection] = useState(''); // State for new connection input
+  const [loading, setLoading] = useState(false); // Loading state for asynchronous actions
 
   useEffect(() => {
     const handleResize = () => {
@@ -130,10 +132,7 @@ const FriendsGraph = ({ userId, friends }) => {
       .selectAll("line")
       .data(graphData.links)
       .enter()
-      .append("line")
-      .attr("stroke", "#999")
-      .attr("stroke-opacity", 0.6)
-      .attr("stroke-width", 1);
+      .append("line");
 
     const node = g
       .append("g")
@@ -201,6 +200,7 @@ const FriendsGraph = ({ userId, friends }) => {
   const closeModal = () => {
     setModalOpen(false);
     setSelectedNode(null);
+    setNewConnection('');
   };
 
   const handleDeleteNode = async () => {
@@ -223,16 +223,107 @@ const FriendsGraph = ({ userId, friends }) => {
     }
   };
 
+  const handleAddConnection = async () => {
+    if (!selectedNode) return;
+
+    setLoading(true);
+    try {
+      const userUid = auth.currentUser.uid;
+      const newConnection = selectedNode.id;  // Use the selected node's ID as the new connection ID
+
+      // Check if the selected node exists in Firestore
+      const selectedUserRef = doc(db, `users/${newConnection}`);
+      const selectedUserDoc = await getDoc(selectedUserRef);
+
+      if (!selectedUserDoc.exists()) {
+        alert('User not found!');
+        setLoading(false);
+        return;
+      }
+
+      const selectedUserData = selectedUserDoc.data();
+
+      // Add the selected user to the current user's connections
+      const currentUserNodeRef = doc(db, `users/${userUid}/nodes/${userUid}`);
+      await updateDoc(currentUserNodeRef, {
+        connections: arrayUnion(newConnection)
+      });
+
+      // Add the current user to the selected user's connections
+      const selectedUserNodeRef = doc(db, `users/${newConnection}/nodes/${newConnection}`);
+      await updateDoc(selectedUserNodeRef, {
+        connections: arrayUnion(userUid)
+      });
+
+      // Create the selected user's node in the current user's node collection
+      await setDoc(doc(db, `users/${userUid}/nodes/${newConnection}`), {
+        id: newConnection,
+        label: selectedUserData.displayName || newConnection,
+        profilePicture: selectedUserData.profilePicture || null,
+        connections: [userUid]
+      });
+
+      // Create the current user's node in the selected user's node collection
+      const currentUserRef = doc(db, `users/${userUid}`);
+      const currentUserDoc = await getDoc(currentUserRef);
+      const currentUserData = currentUserDoc.data();
+
+      await setDoc(doc(db, `users/${newConnection}/nodes/${userUid}`), {
+        id: userUid,
+        label: currentUserData.displayName || userUid,
+        profilePicture: currentUserData.profilePicture || null,
+        connections: [newConnection]
+      });
+
+      // Update local state with the new connection
+      const updatedNodes = [...graphData.nodes, {
+        id: newConnection,
+        label: selectedUserData.displayName || newConnection,
+        profilePicture: selectedUserData.profilePicture || null,
+        connections: [userUid]
+      }];
+      const updatedLinks = [...graphData.links, { source: selectedNode.id, target: newConnection, type: 'friend', strength: 1 }];
+
+      setGraphData({ nodes: updatedNodes, links: updatedLinks });
+      closeModal(); // Close modal after adding the connection
+
+      alert('User added successfully!');
+    } catch (error) {
+      console.error("Error adding connection:", error);
+      alert('Failed to add user. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
   return (
     <div ref={containerRef} className="graph-container">
       <svg ref={svgRef} width={dimensions.width} height={dimensions.height}></svg>
       {modalOpen && selectedNode && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>Node Information</h2>
-            <p>ID: {selectedNode.id}</p>
-            <p>Label: {selectedNode.label}</p>
-            <button onClick={closeModal}>Close</button>
+            {selectedNode.profilePicture && (
+              <img
+                src={selectedNode.profilePicture}
+                alt={`${selectedNode.label}'s profile`}
+                style={{ width: '100px', height: '100px' }}
+              />
+            )}
+            <p>{selectedNode.label}</p>
+            <p>{selectedNode.shortenedName}</p>
+
+
+
+            <button onClick={handleAddConnection} disabled={loading}>
+              {loading ? 'Adding...' : 'Add'}
+            </button>
+
+
+            <button onClick={closeModal} disabled={loading}>
+              Close
+            </button>
           </div>
         </div>
       )}
