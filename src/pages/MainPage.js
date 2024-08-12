@@ -107,9 +107,10 @@ function MainPage({ handleAddNode }) {
             <div className="graph-container">
                 <Graph userId={auth.currentUser?.uid} />
             </div>
-            
+
             <AddNodeButton onAddNode={handleAddNodeAndRefresh} />
-            <SearchBar showSearchBar={showSearchBar} setShowSearchBar={setShowSearchBar} handleFriendSelect={handleFriendSelect} />
+            <SearchBar showSearchBar={showSearchBar} onFriendAdded={handleFriendAdded}
+                setShowSearchBar={setShowSearchBar} handleFriendSelect={handleFriendSelect} />
             <ShareButton /> {/* Add the ShareButton component */}
             {/* <div className="add-section">
                 <h3>Advertisement</h3>

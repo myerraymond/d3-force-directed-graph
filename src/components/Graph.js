@@ -8,7 +8,7 @@ import "./Graph.css";
 const defaultImage = "./0.png";
 const primaryNode = "John";
 
-const Graph = ({ userId, friends }) => {
+const Graph = ({ userId }) => {
   const svgRef = useRef();
   const containerRef = useRef();
 
@@ -19,8 +19,6 @@ const Graph = ({ userId, friends }) => {
 
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [modalOpen, setModalOpen] = useState(false);
-  const [primaryNodeModalOpen, setPrimaryNodeModalOpen] = useState(false);
-  const [expandedNetworkModalOpen, setExpandedNetworkModalOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
   const [loading, setLoading] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState(new Set());
@@ -44,16 +42,16 @@ const Graph = ({ userId, friends }) => {
     try {
       const nodesCollectionRef = collection(db, `users/${uid}/nodes`);
       const nodesSnapshot = await getDocs(nodesCollectionRef);
-  
+
       const nodeMap = {};
       nodesSnapshot.docs.forEach(doc => {
         const node = { id: doc.id, ...doc.data() };
         nodeMap[node.id] = node;
       });
-  
+
       const nodes = Object.values(nodeMap);
       const links = [];
-  
+
       nodes.forEach(node => {
         if (node.connections) {
           node.connections.forEach(connectionId => {
@@ -78,7 +76,7 @@ const Graph = ({ userId, friends }) => {
 
       setExpandedNodes(new Set(detailedNodes.map(node => node.id)));
       setExpandedLinks(new Set(links.map(link => `${link.source}-${link.target}`)));
-  
+
       setGraphData({ nodes: detailedNodes, links });
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -222,7 +220,7 @@ const Graph = ({ userId, friends }) => {
 
   const refreshGraph = () => {
     if (userId) {
-          setGraphData({ nodes: [], links: [] });
+      setGraphData({ nodes: [], links: [] });
     }
   };
 
@@ -323,30 +321,44 @@ const Graph = ({ userId, friends }) => {
     }
   };
 
-  
-
-  return (
-    <div ref={containerRef} className="graph-container">
-      {/* <button onClick={refreshGraph} className="refresh-btn">
-        Refresh
-      </button> */}
-      <svg ref={svgRef} width={dimensions.width} height={dimensions.height}></svg>
-      {modalOpen && selectedNode && (
+  const renderModal = () => {
+    if (expandedNodes.has(selectedNode.id)) {
+      return (
         <div className="modal-overlay">
           <div className="modal-content">
-            <img src={selectedNode.profilePicture || defaultImage} alt={selectedNode.label} className="modal-profile-picture"/>
+            <img src={selectedNode.profilePicture || defaultImage} alt={selectedNode.label} className="modal-profile-picture" />
             <p>{selectedNode.displayName}</p>
             <p>Name: {selectedNode.shortenedName}</p>
             <button onClick={onExpandNetwork} className="expand-network-btn">
               Expand Network
             </button>
+            <button onClick={closeModal}>Close</button>
+
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <img src={selectedNode.profilePicture || defaultImage} alt={selectedNode.label} className="modal-profile-picture" />
+            <p>{selectedNode.displayName}</p>
+            <p>Name: {selectedNode.shortenedName}</p>
             <button onClick={handleDeleteNode} disabled={loading}>
               {loading ? "Deleting..." : "Delete"}
             </button>
             <button onClick={closeModal}>Close</button>
           </div>
         </div>
-      )}
+      );
+    }
+  };
+
+
+  return (
+    <div ref={containerRef} className="graph-container">
+      <svg ref={svgRef} width={dimensions.width} height={dimensions.height}></svg>
+      {modalOpen && selectedNode && renderModal()}
       {loading && (
         <div className="loading-overlay">
           <div className="loading-spinner"></div>

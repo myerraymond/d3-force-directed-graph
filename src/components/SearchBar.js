@@ -18,7 +18,7 @@ function SearchBar({ onFriendSelect, onFriendAdded, onClose }) {
     const [tooltipPosition, setTooltipPosition] = useState('bottom');
     const [isAdding, setIsAdding] = useState(false);
     const [addSuccess, setAddSuccess] = useState(false);
-    const infoIconRef = useRef(null);
+    const [successMessage, setSuccessMessage] = useState(''); const infoIconRef = useRef(null);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
 
@@ -51,121 +51,66 @@ function SearchBar({ onFriendSelect, onFriendAdded, onClose }) {
     const handleSelect = async (friend) => {
         setIsAdding(true);
         setAddSuccess(false);
+        setSuccessMessage('');
         try {
             const friendId = friend.id;
-
-            // Retrieve full friend details from Firestore
             const friendDocRef = doc(db, 'users', friendId);
             const friendDoc = await getDoc(friendDocRef);
             const friendData = friendDoc.data();
-
+    
             if (!friendData) {
                 throw new Error('Friend data not found');
             }
-
-            // Retrieve current user data
+    
             const currentUserRef = doc(db, 'users', currentUser.uid);
             const currentUserDoc = await getDoc(currentUserRef);
             const currentUserData = currentUserDoc.data();
-
+    
             if (!currentUserData) {
                 throw new Error('Current user data not found');
             }
-
-            // Reference to the current user's primary node
-            const userNodeRef = doc(db, `users/${currentUser.uid}/nodes/${currentUser.uid}`);
-            // Reference to the selected friend's primary node
-            const friendNodeRef = doc(db, `users/${friendId}/nodes/${friendId}`);
-
-            // Add the selected friend to the current user's connections
-            await updateDoc(userNodeRef, {
-                connections: arrayUnion(friendId)
-            });
-
-            // Add the current user to the selected friend's connections
-            await updateDoc(friendNodeRef, {
-                connections: arrayUnion(currentUser.uid)
-            });
-
-            // Create or update the selected friend's node in the current user's node collection
-            await setDoc(doc(db, `users/${currentUser.uid}/nodes/${friendId}`), {
+    
+            const userNodeRef = doc(db, `users/${currentUser.uid}/nodes/${friendId}`);
+    
+            // Add the selected user to the current user's connections
+            await setDoc(userNodeRef, {
                 id: friendId,
                 label: friendData.displayName,
                 profilePicture: friendData.profilePicture,
-                connections: [currentUser.uid]
+                connections: [currentUser.uid] // No need to add self to connections
             });
-
-            // Create or update the current user's node in the selected friend's node collection
-            await setDoc(doc(db, `users/${friendId}/nodes/${currentUser.uid}`), {
-                id: currentUser.uid,
-                label: currentUserData.displayName,
+    
+            // Store a notification in the selected user's database
+            const notificationRef = doc(db, `users/${friendId}/notifications/${currentUser.uid}`);
+            await setDoc(notificationRef, {
+                displayName: currentUserData.displayName,
+                email: currentUserData.email,
+                message: `${currentUserData.displayName} has added you to their network.`,
                 profilePicture: currentUserData.profilePicture,
-                connections: [friendId]
+                timestamp: new Date(),
+                type: 'new_connection',
+                userId: currentUser.uid
             });
-
-            // Retrieve all connections of the selected friend
-            const friendConnectionsRef = collection(db, `users/${friendId}/nodes`);
-            const friendConnectionsSnapshot = await getDocs(friendConnectionsRef);
-            const friendConnections = friendConnectionsSnapshot.docs.map(doc => doc.id);
-
-            // Retrieve all connections of the current user
-            const currentUserConnectionsRef = collection(db, `users/${currentUser.uid}/nodes`);
-            const currentUserConnectionsSnapshot = await getDocs(currentUserConnectionsRef);
-            const currentUserConnections = currentUserConnectionsSnapshot.docs.map(doc => doc.id);
-
-            // Find mutual connections
-            const mutualConnections = friendConnections.filter(connectionId => currentUserConnections.includes(connectionId) && connectionId !== currentUser.uid);
-
-            // Add only mutual connections to the current user's node collection
-            for (const connectionId of mutualConnections) {
-                // Check if the mutual connection already exists in the current user's node collection
-                const connectionDocRef = doc(db, `users/${currentUser.uid}/nodes/${connectionId}`);
-                const connectionDoc = await getDoc(connectionDocRef);
-
-                if (!connectionDoc.exists()) {
-                    // Retrieve connection details
-                    const connectionDocRefInUsers = doc(db, `users/${connectionId}`);
-                    const connectionDocInUsers = await getDoc(connectionDocRefInUsers);
-                    const connectionData = connectionDocInUsers.data();
-
-                    // Add the mutual connection as a node in the current user's node collection
-                    await setDoc(doc(db, `users/${currentUser.uid}/nodes/${connectionId}`), {
-                        id: connectionId,
-                        label: connectionData.displayName,
-                        profilePicture: connectionData.profilePicture,
-                        connections: [friendId]
-                    });
-
-                    // Add the current user as a connection of the mutual node
-                    await updateDoc(doc(db, `users/${connectionId}/nodes/${currentUser.uid}`), {
-                        connections: arrayUnion(friendId)
-                    });
-                }
-            }
-
-            // Update mutual connections
-            await findMutualConnections(currentUser.uid);
-
-            // Notify the parent component to refresh the graph
-            onFriendAdded();
-
+    
+            setSuccessMessage('You have successfully added ' + friend.displayName + '!');
             setAddSuccess(true);
             setSearchQuery('');
             setSearchResults([]);
+            onFriendAdded(); // Callback for friend added
+    
         } catch (error) {
             console.error('Error adding friend:', error);
         } finally {
             setIsAdding(false);
-            if (typeof onClose === 'function') {
-                setTimeout(() => {
-                    setAddSuccess(false);
-                    // Only close the search results, not the entire search bar
-                    setSearchResults([]);
-                }, 2000);
-            }
+            setTimeout(() => {
+                if (typeof onClose === 'function') {
+                    onClose(); // Close the search bar
+                }
+                window.location.reload(); // Refresh the page
+            }, 2000);
         }
     };
-
+    
 
     const handleView = (friendId) => {
         navigate(`/user/${friendId}`);
@@ -242,7 +187,7 @@ function SearchBar({ onFriendSelect, onFriendAdded, onClose }) {
             {addSuccess && !isAdding && (
                 <div className="modal">
                     <div className="modal-content">
-                        <p>Friend added successfully!</p>
+                        <p>{successMessage}</p>
                         <button onClick={() => setAddSuccess(false)}>Close</button>
                     </div>
                 </div>
