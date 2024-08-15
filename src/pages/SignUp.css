@@ -8,9 +8,16 @@
   color: #333;
   padding: 20px;
   text-align: center;
+  background-color: #ffffff;
 }
 
-.signup-container h1 {
+.logo {
+  width: 200px; /* Adjust the width as needed */
+  height: auto; /* Maintain aspect ratio */
+  margin-bottom: 2rem;
+}
+
+h1 {
   font-size: 3rem;
   margin-bottom: 1.5rem;
   color: #00642d;
@@ -18,11 +25,10 @@
   animation: fadeInDown 1s ease;
 }
 
-.signup-container form {
+form {
   display: flex;
   flex-direction: column;
-  align-items: center;  /* Center align items */
-  justify-content: center;
+  align-items: center;
   width: 100%;
   max-width: 400px;
   background-color: #fff;
@@ -32,9 +38,8 @@
   animation: fadeInUp 1s ease;
 }
 
-.signup-container input {
+input {
   width: 100%;
-  max-width: 100%;
   padding: 12px;
   margin: 10px 0;
   border: 2px solid #ddd;
@@ -44,13 +49,13 @@
   transition: border-color 0.3s ease;
 }
 
-.signup-container input:focus {
+input:focus {
   border-color: #0096c7;
   outline: none;
   box-shadow: 0 0 10px rgba(0, 150, 199, 0.2);
 }
 
-.signup-container button {
+button {
   width: 100%;
   background-color: #0096c7;
   color: white;
@@ -65,20 +70,46 @@
   box-shadow: 0 4px 8px rgba(0, 150, 199, 0.2);
 }
 
-.signup-container button:hover {
+button:hover {
   background-color: #0077b6;
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 119, 182, 0.3);
 }
 
-.signup-container .links {
+.error {
+  color: #d9534f;
+  background-color: #f2dede;
+  border: 1px solid #ebccd1;
+  padding: 10px;
+  margin-bottom: 15px;
+  width: 100%;
+  text-align: center;
+  border-radius: 8px;
+  font-weight: bold;
+  animation: fadeIn 0.5s ease;
+}
+
+.loading {
+  color: #5bc0de;
+  background-color: #d9edf7;
+  border: 1px solid #bce8f1;
+  padding: 10px;
+  margin-bottom: 15px;
+  width: 100%;
+  text-align: center;
+  border-radius: 8px;
+  font-weight: bold;
+  animation: fadeIn 0.5s ease;
+}
+
+.links {
   margin-top: 20px;
   display: flex;
   justify-content: space-between;
   width: 100%;
 }
 
-.signup-container .links > * {
+.home-link, .login-link {
   text-decoration: none;
   color: white;
   background-color: #023e8a;
@@ -89,33 +120,10 @@
   box-shadow: 0 4px 8px rgba(2, 62, 138, 0.2);
 }
 
-.signup-container .links > *:hover {
+.home-link:hover, .login-link:hover {
   background-color: #0077b6;
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(2, 62, 138, 0.3);
-}
-
-.signup-container .error,
-.signup-container .loading {
-  padding: 10px;
-  margin-bottom: 15px;
-  width: 100%;
-  text-align: center;
-  border-radius: 8px;
-  font-weight: bold;
-  animation: fadeIn 0.5s ease;
-}
-
-.signup-container .error {
-  color: #d9534f;
-  background-color: #f2dede;
-  border: 1px solid #ebccd1;
-}
-
-.signup-container .loading {
-  color: #5bc0de;
-  background-color: #d9edf7;
-  border: 1px solid #bce8f1;
 }
 
 /* Keyframe Animations */
@@ -148,4 +156,10 @@
   to {
     opacity: 1;
   }
+}
+
+.required-fields {
+  color: #d9534f;
+  margin-bottom: 0px;
+  font-weight: bold;
 }

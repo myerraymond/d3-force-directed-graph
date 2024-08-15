@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from 'fire
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import './SignUp.css';
+import logo from '../assets/logo.png'; // Import the logo image
 
 function SignUp() {
     const navigate = useNavigate();
@@ -12,9 +13,12 @@ function SignUp() {
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState(''); // Added confirmPassword state
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [username, setUsername] = useState('');
     const [profilePicture, setProfilePicture] = useState(null);
+    const [emailError, setEmailError] = useState(null);
+    const [usernameError, setUsernameError] = useState(null);
+    const [passwordError, setPasswordError] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -31,6 +35,11 @@ function SignUp() {
         }
     };
 
+    const validateEmailFormat = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
     const isUsernameTaken = async (username) => {
         const usernameDoc = await getDoc(doc(db, 'usernames', username));
         return usernameDoc.exists();
@@ -39,6 +48,76 @@ function SignUp() {
     const isEmailTaken = async (email) => {
         const signInMethods = await fetchSignInMethodsForEmail(auth, email);
         return signInMethods.length > 0;
+    };
+
+    const checkEmail = async (email) => {
+        if (!validateEmailFormat(email)) {
+            setEmailError('Please enter a valid email.');
+            return;
+        }
+    
+        try {
+            const emailTaken = await isEmailTaken(email);
+            if (emailTaken) {
+                setEmailError('Email is already in use.');
+            } else {
+                setEmailError(null);
+            }
+        } catch (error) {
+            if (error.code === 'auth/email-already-in-use') {
+                setEmailError('Email is already in use.');
+            } else {
+                setEmailError('An error occurred. Please try again.');
+            }
+        }
+    };
+    
+    const checkUsername = async (username) => {
+        if (username === '') {
+            setUsernameError(null);
+            return;
+        }
+
+        const usernameTaken = await isUsernameTaken(username);
+        if (usernameTaken) {
+            setUsernameError('Username is already taken.');
+        } else {
+            setUsernameError(null);
+        }
+    };
+
+    const handleEmailChange = async (e) => {
+        const newEmail = e.target.value;
+        setEmail(newEmail);
+        await checkEmail(newEmail);
+    };
+
+    const handleUsernameChange = async (e) => {
+        const newUsername = e.target.value;
+        setUsername(newUsername);
+        await checkUsername(newUsername);
+    };
+
+    const handlePasswordChange = (e) => {
+        const newPassword = e.target.value;
+        setPassword(newPassword);
+
+        if (newPassword !== confirmPassword) {
+            setPasswordError('Passwords do not match.');
+        } else {
+            setPasswordError(null);
+        }
+    };
+
+    const handleConfirmPasswordChange = (e) => {
+        const newConfirmPassword = e.target.value;
+        setConfirmPassword(newConfirmPassword);
+
+        if (newConfirmPassword !== password) {
+            setPasswordError('Passwords do not match.');
+        } else {
+            setPasswordError(null);
+        }
     };
 
     const handleSignUp = async (e) => {
@@ -52,14 +131,8 @@ function SignUp() {
                 return;
             }
 
-            if (await isEmailTaken(email)) {
-                setError('Email is already in use. Please use another email.');
-                setLoading(false);
-                return;
-            }
-
-            if (await isUsernameTaken(username)) {
-                setError('Username is already taken. Please choose another one.');
+            if (emailError || usernameError) {
+                setError('Please fix the errors before submitting.');
                 setLoading(false);
                 return;
             }
@@ -106,63 +179,60 @@ function SignUp() {
 
     return (
         <div className="signup-container">
-            <h1>Let's get you started</h1>
+            <img src={logo} alt="logo" className="logo" /> {/* Display the logo */}
             {error && <p className="error">{error}</p>}
             {loading && <p className="loading">Signing up, please wait... Don't refresh this page.</p>}
             <form onSubmit={handleSignUp}>
-                <input 
-                    type="text" 
-                    placeholder="First Name" 
-                    value={firstName} 
-                    onChange={(e) => setFirstName(e.target.value)} 
-                    required 
+                <p className="required-fields">All fields are required</p>
+                <input
+                    type="text"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
                 />
-                <input 
-                    type="text" 
-                    placeholder="Last Name" 
-                    value={lastName} 
-                    onChange={(e) => setLastName(e.target.value)} 
-                    required 
+                <input
+                    type="text"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
                 />
-                <input 
-                    type="email" 
-                    placeholder="Email" 
-                    value={email} 
-                    onChange={(e) => setEmail(e.target.value)} 
-                    required 
+                <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    required
                 />
-                <input 
-                    type="password" 
-                    placeholder="Password" 
-                    value={password} 
-                    onChange={(e) => setPassword(e.target.value)} 
-                    required 
+                {emailError && <p className="error">{emailError}</p>}
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                    required
                 />
-                <input 
-                    type="password" 
-                    placeholder="Confirm Password" 
-                    value={confirmPassword} 
-                    onChange={(e) => setConfirmPassword(e.target.value)} 
-                    required 
+                <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={handleConfirmPasswordChange}
+                    required
                 />
-                <input 
-                    type="text" 
-                    placeholder="Username" 
-                    value={username} 
-                    onChange={(e) => setUsername(e.target.value)} 
-                    required 
+                {passwordError && <p className="error">{passwordError}</p>}
+                <input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={handleUsernameChange}
+                    required
                 />
-                <input 
-                    type="file" 
-                    accept="image/*"
-                    onChange={handleFileChange} 
-                />
+                {usernameError && <p className="error">{usernameError}</p>}
+                <input type="file" onChange={handleFileChange} />
                 <button type="submit" disabled={loading}>Sign Up</button>
             </form>
-            <div className="links">
-                <Link to="/">Home Page</Link>
-                <Link to="/login">Login Page</Link>
-            </div>
+            <Link to="/login" className="login-link">Already have an account? Log in here</Link>
         </div>
     );
 }

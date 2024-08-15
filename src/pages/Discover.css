@@ -1,44 +1,75 @@
 .discover-container {
-  padding: 20px;
+  padding: 40px;
   text-align: center;
-  background-color: #f8f9fa; /* Light grey background for a clean look */
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  width: 250px;
+  margin-bottom: 20px;
+  animation: fadeIn 2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .title {
-  font-size: 2.5rem;
-  color: #343a40; /* Dark grey for the title */
+  font-size: 3rem;
+  color: #ffffff;
+  margin-bottom: 20px;
+  font-family: 'Roboto', sans-serif;
 }
 
 .description {
-  font-size: 1.25rem; /* Slightly smaller for better balance */
-  color: #6c757d; /* Medium grey for description text */
-  margin: 20px 0;
+  font-size: 1.5rem;
+  color: #343a40;
+  margin-bottom: 30px;
+  max-width: 700px;
+  line-height: 1.6;
 }
 
 .features {
-  display: flex;
-  flex-direction: column; /* Stacked vertically for simplicity */
-  align-items: center;
-  gap: 20px; /* Space between features */
-  margin-top: 30px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  width: 80%;
+  max-width: 1000px;
 }
 
 .feature {
-  background-color: #ffffff; /* White background for each feature */
-  padding: 20px;
-  border-radius: 8px;
-  width: 80%; /* Increased width for better readability */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 400px; /* Maximum width for better layout on larger screens */
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
 }
 
 .feature h2 {
   font-size: 1.5rem;
-  color: #343a40; /* Dark grey for feature titles */
+  color: #343a40;
+  margin-bottom: 15px;
+  font-family: 'Roboto', sans-serif;
 }
 
 .feature p {
   font-size: 1rem;
-  color: #495057; /* Slightly lighter grey for feature descriptions */
+  color: #6c757d;
+  text-align: center;
+  line-height: 1.6;
+  font-family: 'Roboto', sans-serif;
 }

@@ -98,7 +98,7 @@ function MainPage({ handleAddNode }) {
             <div className="header-container">
                 <img src={logo} alt="Logo" className="header-logo" />
                 <div className="username-text">
-                    Welcome, {username}
+                    {username}
                 </div>
             </div>
             <div className="profile-link-container">

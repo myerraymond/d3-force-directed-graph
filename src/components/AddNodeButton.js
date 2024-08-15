@@ -10,6 +10,7 @@ function AddNodeButton({ handleAddNode }) {
     const [selectedNode1, setSelectedNode1] = useState('');
     const [selectedNode2, setSelectedNode2] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
     const { currentUser } = useAuth();
 
     useEffect(() => {
@@ -40,6 +41,7 @@ function AddNodeButton({ handleAddNode }) {
         setSelectedNode1('');
         setSelectedNode2('');
         setIsLoading(false);
+        setSuccessMessage(''); // Clear the success message when closing the modal
     };
 
     const handleAddConnectionClick = async () => {
@@ -60,7 +62,7 @@ function AddNodeButton({ handleAddNode }) {
 
                 handleAddNode({ id: selectedNode1 }, { id: selectedNode2 });
                 setIsLoading(false);
-                handleCloseModal();
+                setSuccessMessage('Connection successfully added!');
             } catch (error) {
                 setIsLoading(false);
                 console.error("Error adding connection: ", error);
@@ -102,6 +104,11 @@ function AddNodeButton({ handleAddNode }) {
                                 ))}
                             </select>
                         </div>
+                        {successMessage && (
+                            <div className="success-message">
+                                {successMessage}
+                            </div>
+                        )}
                         <button 
                             onClick={handleAddConnectionClick} 
                             disabled={isLoading || !selectedNode1 || !selectedNode2 || selectedNode1 === selectedNode2}

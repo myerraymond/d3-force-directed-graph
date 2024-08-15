@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase'; // Make sure this path points to your firebase config file
 import './Login.css';
+import logo from '../assets/logo.png'; // Import the logo image
 
 function Login() {
     const navigate = useNavigate();
@@ -28,7 +29,7 @@ function Login() {
 
     return (
         <div className="login-container">
-            <h1>Login Page</h1>
+            <img src={logo} alt="logo" className="logo" /> {/* Display the logo */}
             {error && <p className="error">{error}</p>}
             <form onSubmit={handleLogin}>
                 <input 
@@ -50,8 +51,8 @@ function Login() {
                 </button>
             </form>
             <div className="links">
-                <Link to="/">Back</Link>
-                <Link to="/signup">Sign Up</Link>
+                <Link to="/" className="back-link">Back</Link>
+                <Link to="/signup" className="signup-link">Sign Up</Link>
             </div>
         </div>
     );

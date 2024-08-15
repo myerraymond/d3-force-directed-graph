@@ -5,60 +5,81 @@
   justify-content: center;
   height: 100vh;
   background-color: #ffffff;
-  font-family: Arial, sans-serif;
+  font-family: 'Arial', sans-serif;
+  color: #333; /* Default text color */
+  text-align: center;
+  padding: 0 20px;
 }
 
-.login-container h1 {
+.logo {
+  width: 200px; /* Adjust the width as needed */
+  height: auto; /* Maintain aspect ratio */
+  margin-bottom: 2rem;
+}
+
+h1 {
   font-size: 2.5rem;
   margin-bottom: 2rem;
   color: #333;
 }
 
-.login-container form {
+form {
   width: 300px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.login-container input {
+input {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin: 10px 0;
   border: 1px solid #ccc;
   border-radius: 5px;
+  font-size: 1rem;
 }
 
-.login-container button {
+button {
   width: 100%;
   background-color: #0096c7;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 12px;
   border-radius: 5px;
   margin-top: 10px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  font-size: 1rem;
 }
 
-.login-container button:hover {
+button:hover {
   background-color: #0056b3;
+  transform: scale(1.05);
 }
 
-.login-container .links {
+.error {
+  color: #d9534f; /* Red color for error messages */
+  margin-bottom: 1rem;
+}
+
+.links {
   margin-top: 20px;
 }
 
-.login-container .links > * {
+.back-link, .signup-link {
   text-decoration: none;
-  color: white;
+  color: #fff;
   background-color: #023e8a;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: 5px;
   margin: 0.5rem;
-  transition: background-color 0.3s ease;
+  font-size: 1rem;
+  font-weight: bold;
+  display: inline-block;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.login-container .links > *:hover {
+.back-link:hover, .signup-link:hover {
   background-color: #0056b3;
+  transform: scale(1.05);
 }

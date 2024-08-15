@@ -1,16 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Welcome.css';
+import logo from '../assets/logo.png'; // Import the logo image
 
 function Welcome() {
   return (
     <div className="welcome-container">
-      <h1>
-        <span className="main-title">net-work.</span>
-        <span className="sub-title">app</span>
-      </h1>
+      <img src={logo} alt="logo" className="logo" /> {/* Display the logo */}
       <Link to="/login" className="login-link">Login</Link>
-      <p>or</p>
+      <p className="p">or</p>
       <Link to="/signup" className="signup-link">Sign Up</Link>
       <a href="/discover" target="_blank" rel="noopener noreferrer" className="discover-link">discover</a>
     </div>

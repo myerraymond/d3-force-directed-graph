@@ -36,14 +36,23 @@
     border: none;
     color: #21a663;
     cursor: pointer;
-    margin-left: 0px;
-    font-size: 20px;
+    margin-left: 0;
+    font-size: 50px; /* Slightly larger font size */
+    padding: 10px; /* Increased padding for better clickability */
+    border-radius: 70%; /* Keeps the button circular */
+    width: 36px; /* Increased width */
+    height: 36px; /* Increased height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     visibility: hidden;
 }
 
 .search-bar input:not(:placeholder-shown) ~ .cancel-search {
     visibility: visible; /* Show when input is not empty */
 }
+
+
 
 .search-bar button {
     padding: 8px 15px;
