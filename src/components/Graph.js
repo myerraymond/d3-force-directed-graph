@@ -336,59 +336,59 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
 
     try {
 
-        const userId = user.id;
-        const userDocRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userDocRef);
-        const userData = userDoc.data();
+      const userId = user.id;
+      const userDocRef = doc(db, 'users', userId);
+      const userDoc = await getDoc(userDocRef);
+      const userData = userDoc.data();
 
-        if (!userData) {
-            throw new Error('User data not found');
-        }
+      if (!userData) {
+        throw new Error('User data not found');
+      }
 
-        const currentUserRef = doc(db, 'users', currentUser.uid);
-        const currentUserDoc = await getDoc(currentUserRef);
-        const currentUserData = currentUserDoc.data();
+      const currentUserRef = doc(db, 'users', currentUser.uid);
+      const currentUserDoc = await getDoc(currentUserRef);
+      const currentUserData = currentUserDoc.data();
 
-        if (!currentUserData) {
-            throw new Error('Current user data not found');
-        }
+      if (!currentUserData) {
+        throw new Error('Current user data not found');
+      }
 
-        const userNodeRef = doc(db, `users/${currentUser.uid}/nodes/${userId}`);
+      const userNodeRef = doc(db, `users/${currentUser.uid}/nodes/${userId}`);
 
-        // Add the selected user to the current user's connections
-        await setDoc(userNodeRef, {
-            id: userId,
-            label: userData.displayName,
-            profilePicture: userData.profilePicture,
-            connections: [currentUser.uid] // No need to add self to connections
-        });
+      // Add the selected user to the current user's connections
+      await setDoc(userNodeRef, {
+        id: userId,
+        label: userData.displayName,
+        profilePicture: userData.profilePicture,
+        connections: [currentUser.uid] // No need to add self to connections
+      });
 
-        // Store a notification in the selected user's database
-        const notificationRef = doc(db, `users/${userId}/notifications/${currentUser.uid}`);
-        await setDoc(notificationRef, {
-            displayName: currentUserData.displayName,
-            email: currentUserData.email,
-            message: `${currentUserData.displayName} has added you to their network.`,
-            profilePicture: currentUserData.profilePicture,
-            timestamp: new Date(),
-            type: 'new_connection',
-            userId: currentUser.uid
-        });
+      // Store a notification in the selected user's database
+      const notificationRef = doc(db, `users/${userId}/notifications/${currentUser.uid}`);
+      await setDoc(notificationRef, {
+        displayName: currentUserData.displayName,
+        email: currentUserData.email,
+        message: `${currentUserData.displayName} has added you to their network.`,
+        profilePicture: currentUserData.profilePicture,
+        timestamp: new Date(),
+        type: 'new_connection',
+        userId: currentUser.uid
+      });
 
-        setSuccessMessage('You have successfully added ' + user.displayName + '!');
-        setAddSuccess(true);
-        if (onClose) onClose(); // Close the modal or popup if necessary
-        if (onFriendAdded) onFriendAdded(); // Callback for friend added
+      setSuccessMessage('You have successfully added ' + user.displayName + '!');
+      setAddSuccess(true);
+      if (onClose) onClose(); // Close the modal or popup if necessary
+      if (onFriendAdded) onFriendAdded(); // Callback for friend added
 
     } catch (error) {
-        console.error('Error adding user:', error);
+      console.error('Error adding user:', error);
     } finally {
-        setIsAdding(false);
-        setTimeout(() => {
-            window.location.reload(); // Refresh the page
-        }, 2000);
+      setIsAdding(false);
+      setTimeout(() => {
+        window.location.reload(); // Refresh the page
+      }, 2000);
     }
-};
+  };
 
 
 
@@ -407,25 +407,22 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
             className="modal-profile-image"
           />
           <h2>{selectedNode.label}</h2>
-          <p>{selectedNode.id}</p>
+          {/* <p>{selectedNode.id}</p> */}
           <p>Name: {selectedNode.shortenedName}</p>
           <button onClick={onExpandNetwork} className="expand-network-btn" disabled={loading}>
             {loading ? "Loading..." : "Expand Network"}
           </button>
-
+          <button
+            onClick={() => handleAddNode(selectedNode)} // Pass the selectedNode to handleAddNode
+            disabled={loading || isAdding}
+          >
+            {loading || isAdding ? "Processing..." : "Add Node"}
+          </button>
           <div className="modal-buttons">
-            {isFriend ? (
-              <button onClick={handleDeleteNode} disabled={loading}>
-                {loading ? "Deleting..." : "Delete Node"}
-              </button>
-            ) : (
-              <button
-                onClick={() => handleAddNode(selectedNode)} // Pass the selectedNode to handleAddNode
-                disabled={loading || isAdding}
-              >
-                {loading || isAdding ? "Processing..." : "Add Node"}
-              </button>
-            )}
+
+            <button onClick={handleDeleteNode} disabled={loading}>
+              {loading ? "Deleting..." : "Delete Node"}
+            </button>
             <button onClick={closeModal}>Close</button>
           </div>
         </div>
