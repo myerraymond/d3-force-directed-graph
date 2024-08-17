@@ -31,25 +31,25 @@
 }
 
 .login-link {
-  background-color: #535353;
+  background-color: #28a745; /* Green color */
 }
 
 .login-link:hover {
-  background-color: #3a3a3a;
+  background-color: #218838; /* Darker green on hover */
   transform: scale(1.05);
 }
 
 .signup-link {
-  background-color: #285fa7;
+  background-color: #28a745; /* Green color */
 }
 
 .signup-link:hover {
-  background-color: #213688;
+  background-color: #218838; /* Darker green on hover */
   transform: scale(1.05);
 }
 
 .discover-link {
-  background-color: #bebebe;
+  background-color: #28a745; /* Green color */
   position: absolute;
   bottom: 20px;
   left: 50%;
@@ -57,7 +57,7 @@
 }
 
 .discover-link:hover {
-  background-color: #6c6c6c;
+  background-color: #218838; /* Darker green on hover */
 }
 
 .p {

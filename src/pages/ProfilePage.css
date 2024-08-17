@@ -151,14 +151,14 @@
     border: none;
     font-size: 1.2rem;
     cursor: pointer;
-    color: #007bff;
+    color: #00642D;
     display: flex;
     align-items: center;
     transition: color 0.3s;
 }
 
 .back-button:hover {
-    color: #0056b3;
+    color: #00642D;
 }
 
 .back-button::before {

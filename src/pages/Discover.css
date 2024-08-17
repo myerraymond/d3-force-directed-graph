@@ -73,3 +73,17 @@
   line-height: 1.6;
   font-family: 'Roboto', sans-serif;
 }
+
+.linkedin-link {
+  display: inline-block;
+  margin-bottom: 30px;
+  font-size: 1.2rem;
+  color: #0077b5; /* LinkedIn's brand color */
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.linkedin-link:hover {
+  color: #005582; /* Darker shade on hover */
+}

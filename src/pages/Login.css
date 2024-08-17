@@ -12,19 +12,19 @@
 }
 
 .logo {
-  width: 200px; /* Adjust the width as needed */
+  width: 150px; /* Smaller width */
   height: auto; /* Maintain aspect ratio */
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem; /* Reduced margin */
 }
 
 h1 {
-  font-size: 2.5rem;
-  margin-bottom: 2rem;
+  font-size: 2rem; /* Smaller font size */
+  margin-bottom: 1.5rem; /* Reduced margin */
   color: #333;
 }
 
 form {
-  width: 300px;
+  width: 250px; /* Reduced width */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -32,54 +32,76 @@ form {
 
 input {
   width: 100%;
-  padding: 12px;
-  margin: 10px 0;
+  padding: 10px; /* Reduced padding */
+  margin: 8px 0; /* Reduced margin */
   border: 1px solid #ccc;
   border-radius: 5px;
-  font-size: 1rem;
+  font-size: 0.9rem; /* Smaller font size */
 }
 
 button {
-  width: 100%;
-  background-color: #0096c7;
+  width: 80%; /* Adjust the width to be smaller */
+  background-color: #00642D;
   color: white;
   border: none;
-  padding: 12px;
+  padding: 10px;
   border-radius: 5px;
-  margin-top: 10px;
+  margin-top: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.3s ease;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  max-width: 250px; /* Optionally, set a max-width */
 }
 
+
 button:hover {
-  background-color: #0056b3;
+  background-color: #00642D;
   transform: scale(1.05);
 }
 
 .error {
   color: #d9534f; /* Red color for error messages */
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem; /* Reduced margin */
 }
 
 .links {
-  margin-top: 20px;
+  margin-top: 15px; /* Reduced margin */
 }
 
 .back-link, .signup-link {
   text-decoration: none;
   color: #fff;
-  background-color: #023e8a;
-  padding: 12px 24px;
+  background-color: #00642D;
+  padding: 10px 20px; /* Reduced padding */
   border-radius: 5px;
-  margin: 0.5rem;
-  font-size: 1rem;
+  margin: 0.3rem; /* Reduced margin */
+  font-size: 0.9rem; /* Smaller font size */
   font-weight: bold;
   display: inline-block;
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .back-link:hover, .signup-link:hover {
-  background-color: #0056b3;
+  background-color: #00642D;
   transform: scale(1.05);
+}
+
+.forgot-password-link {
+  background: none;
+  border: none;
+  color: #28a745;
+  cursor: pointer;
+  margin-top: 8px; /* Reduced margin */
+  font-size: 0.9rem; /* Smaller font size */
+  transition: color 0.3s ease;
+}
+
+.forgot-password-link:hover {
+  color: #ffffff;
+  background-color: #00642D;
+}
+
+.reset-message {
+  color: #00642D; /* Green color for success messages */
+  margin-bottom: 0.8rem; /* Reduced margin */
 }

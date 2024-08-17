@@ -10,6 +10,15 @@ function Discover() {
         Explore new connections and expand your network in a fun and interactive way.
       </p>
       
+      <a 
+        href="https://www.linkedin.com" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className="linkedin-link"
+      >
+        LinkedIn
+      </a>
+
       <div className="features">
         <div className="feature">
           <h2>Visualize Your Network</h2>
