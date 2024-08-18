@@ -1,14 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { auth, db } from '../firebase';
-import { arrayRemove, collection, getDocs, updateDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
+import { arrayRemove, setDoc, collection, getDocs, arrayUnion, updateDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import "./Graph.css";
+import { useAuth } from '../AuthContext';
 
 const defaultImage = "./0.png";
 const primaryNode = "John";
 
-const Graph = ({ userId }) => {
+const Graph = ({ userId, onClose, onFriendAdded }) => {
   const svgRef = useRef();
   const containerRef = useRef();
 
@@ -23,6 +24,13 @@ const Graph = ({ userId }) => {
   const [loading, setLoading] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState(new Set());
   const [expandedLinks, setExpandedLinks] = useState(new Set());
+  const [isFriend, setIsFriend] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [addSuccess, setAddSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const handleResize = () => {
@@ -321,47 +329,120 @@ const Graph = ({ userId }) => {
     }
   };
 
-  const renderModal = () => {
-    if (expandedNodes.has(selectedNode.id)) {
-      return (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <img src={selectedNode.profilePicture || defaultImage} alt={selectedNode.label} className="modal-profile-picture" />
-            <p>{selectedNode.displayName}</p>
-            <p>Name: {selectedNode.shortenedName}</p>
-            <button onClick={onExpandNetwork} className="expand-network-btn">
-              Expand Network
-            </button>
-            <button onClick={closeModal}>Close</button>
+  const handleAddNode = async (user) => {
+    setIsAdding(true);
+    setAddSuccess(false);
+    setSuccessMessage('');
 
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <img src={selectedNode.profilePicture || defaultImage} alt={selectedNode.label} className="modal-profile-picture" />
-            <p>{selectedNode.displayName}</p>
-            <p>Name: {selectedNode.shortenedName}</p>
-            <button onClick={handleDeleteNode} disabled={loading}>
-              {loading ? "Deleting..." : "Delete"}
-            </button>
+    try {
+
+        const userId = user.id;
+        const userDocRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userDocRef);
+        const userData = userDoc.data();
+
+        if (!userData) {
+            throw new Error('User data not found');
+        }
+
+        const currentUserRef = doc(db, 'users', currentUser.uid);
+        const currentUserDoc = await getDoc(currentUserRef);
+        const currentUserData = currentUserDoc.data();
+
+        if (!currentUserData) {
+            throw new Error('Current user data not found');
+        }
+
+        const userNodeRef = doc(db, `users/${currentUser.uid}/nodes/${userId}`);
+
+        // Add the selected user to the current user's connections
+        await setDoc(userNodeRef, {
+            id: userId,
+            label: userData.displayName,
+            profilePicture: userData.profilePicture,
+            connections: [currentUser.uid] // No need to add self to connections
+        });
+
+        // Store a notification in the selected user's database
+        const notificationRef = doc(db, `users/${userId}/notifications/${currentUser.uid}`);
+        await setDoc(notificationRef, {
+            displayName: currentUserData.displayName,
+            email: currentUserData.email,
+            message: `${currentUserData.displayName} has added you to their network.`,
+            profilePicture: currentUserData.profilePicture,
+            timestamp: new Date(),
+            type: 'new_connection',
+            userId: currentUser.uid
+        });
+
+        setSuccessMessage('You have successfully added ' + user.displayName + '!');
+        setAddSuccess(true);
+        if (onClose) onClose(); // Close the modal or popup if necessary
+        if (onFriendAdded) onFriendAdded(); // Callback for friend added
+
+    } catch (error) {
+        console.error('Error adding user:', error);
+    } finally {
+        setIsAdding(false);
+        setTimeout(() => {
+            window.location.reload(); // Refresh the page
+        }, 2000);
+    }
+};
+
+
+
+
+
+
+  const renderModal = () => {
+    if (!selectedNode) return null;
+
+    return (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <img
+            src={selectedNode.profilePicture || defaultImage}
+            alt={selectedNode.label}
+            className="modal-profile-image"
+          />
+          <h2>{selectedNode.label}</h2>
+          <p>{selectedNode.id}</p>
+          <p>Name: {selectedNode.shortenedName}</p>
+          <button onClick={onExpandNetwork} className="expand-network-btn" disabled={loading}>
+            {loading ? "Loading..." : "Expand Network"}
+          </button>
+
+          <div className="modal-buttons">
+            {isFriend ? (
+              <button onClick={handleDeleteNode} disabled={loading}>
+                {loading ? "Deleting..." : "Delete Node"}
+              </button>
+            ) : (
+              <button
+                onClick={() => handleAddNode(selectedNode)} // Pass the selectedNode to handleAddNode
+                disabled={loading || isAdding}
+              >
+                {loading || isAdding ? "Processing..." : "Add Node"}
+              </button>
+            )}
             <button onClick={closeModal}>Close</button>
           </div>
         </div>
-      );
-    }
+      </div>
+    );
   };
+
 
 
   return (
     <div ref={containerRef} className="graph-container">
-      <svg ref={svgRef} width={dimensions.width} height={dimensions.height}></svg>
-      {modalOpen && selectedNode && renderModal()}
-      {loading && (
-        <div className="loading-overlay">
-          <div className="loading-spinner"></div>
+      <svg ref={svgRef} width={dimensions.width} height={dimensions.height} />
+      {modalOpen && renderModal()}
+      {addSuccess && (
+        <div className="success-message">
+          {successMessage}
+          <button onClick={() => setAddSuccess(false)}>Close</button>
         </div>
       )}
     </div>

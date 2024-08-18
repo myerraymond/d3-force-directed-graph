@@ -56,8 +56,8 @@ function MainPage({ handleAddNode }) {
         return () => unsubscribe();
     }, []);
 
-    const handleAddNodeAndRefresh = useCallback(async (nodeName) => {
-        handleAddNode(nodeName);
+    const handleAddNodeAndRefresh = useCallback(async (node1, node2) => {
+        handleAddNode(node1, node2);
         setFriendsCount(prev => prev + 1);  // Increment friendsCount to trigger refresh
     }, [handleAddNode]);
 

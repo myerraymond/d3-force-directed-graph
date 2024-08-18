@@ -4,7 +4,7 @@ import { db } from '../firebase';
 import { collection, doc, updateDoc, arrayUnion, getDocs } from 'firebase/firestore';
 import { useAuth } from '../AuthContext';
 
-function AddNodeButton({ handleAddNode }) {
+function AddNodeButton({ onAddNode }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [nodes, setNodes] = useState([]);
     const [selectedNode1, setSelectedNode1] = useState('');
@@ -48,7 +48,6 @@ function AddNodeButton({ handleAddNode }) {
         if (selectedNode1 && selectedNode2 && selectedNode1 !== selectedNode2) {
             setIsLoading(true);
             try {
-                // Add each node to the other node's connections
                 const nodeRef1 = doc(db, `users/${currentUser.uid}/nodes/${selectedNode1}`);
                 const nodeRef2 = doc(db, `users/${currentUser.uid}/nodes/${selectedNode2}`);
                 
@@ -60,9 +59,20 @@ function AddNodeButton({ handleAddNode }) {
                     connections: arrayUnion(selectedNode1)
                 });
 
-                handleAddNode({ id: selectedNode1 }, { id: selectedNode2 });
-                setIsLoading(false);
+                onAddNode({ id: selectedNode1 }, { id: selectedNode2 });
+
+                // Display success message
                 setSuccessMessage('Connection successfully added!');
+                
+                // Log for debugging
+                console.log('Success message set:', 'Connection successfully added!');
+                
+                // Clear the form and success message after a delay
+                setTimeout(() => {
+                    handleCloseModal(); // Close the modal
+                }, 2000); // Keep the success message for 2 seconds
+
+                setIsLoading(false);
             } catch (error) {
                 setIsLoading(false);
                 console.error("Error adding connection: ", error);
@@ -107,6 +117,7 @@ function AddNodeButton({ handleAddNode }) {
                         {successMessage && (
                             <div className="success-message">
                                 {successMessage}
+                                <button onClick={() => setSuccessMessage('')} className="success-close-btn">&times;</button>
                             </div>
                         )}
                         <button 
