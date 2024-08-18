@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db, storage } from '../firebase';
-import { doc, getDoc, updateDoc, collection, getDocs, deleteDoc, addDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, getDocs, deleteDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
 import './ProfilePage.css';
@@ -10,7 +10,7 @@ function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [profilePicUrl, setProfilePicUrl] = useState('');
     const [notifications, setNotifications] = useState([]);
-    const [loadingNotificationId, setLoadingNotificationId] = useState(null); // New state for loading notification
+    const [loadingNotificationId, setLoadingNotificationId] = useState(null);
 
     const navigate = useNavigate();
 
@@ -30,12 +30,16 @@ function ProfilePage() {
                 // Fetch notifications for the user
                 const notificationsRef = collection(db, `users/${userId}/notifications`);
                 const notificationsSnapshot = await getDocs(notificationsRef);
-                const notificationsList = notificationsSnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setNotifications(notificationsList);
+                const notificationsList = notificationsSnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        timestamp: data.timestamp.toDate().toLocaleString(),
+                    };
+                });
 
+                setNotifications(notificationsList);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching user data:', error);
@@ -75,33 +79,69 @@ function ProfilePage() {
     };
 
     const handleAddBack = async (notificationId) => {
-        setLoadingNotificationId(notificationId); // Set loading state for the specific notification
+        if (!auth.currentUser) {
+            console.error('User not authenticated');
+            return;
+        }
 
         try {
-            const userId = auth.currentUser.uid;
-            const notificationRef = doc(db, `users/${userId}/notifications/${notificationId}`);
+            const currentUserId = auth.currentUser.uid;
+            const notificationRef = doc(db, `users/${currentUserId}/notifications/${notificationId}`);
             const notificationDoc = await getDoc(notificationRef);
             const notificationData = notificationDoc.data();
 
-            // Add the notification back to the user's collection
-            await addDoc(collection(db, `users/${userId}/notifications`), {
-                message: notificationData.message,
-                displayName: notificationData.displayName,
-                email: notificationData.email,
+            if (!notificationData) {
+                throw new Error('Notification data not found');
+            }
+
+            // Reference to the current user's node connections
+            const userNodeRef = doc(db, `users/${currentUserId}/nodes/${notificationData.userId}`);
+
+            // Add the selected user to the current user's connections
+            await setDoc(userNodeRef, {
+                id: notificationData.userId,
+                label: notificationData.displayName,
                 profilePicture: notificationData.profilePicture,
-                timestamp: notificationData.timestamp,
-                type: notificationData.type,
-                userId: notificationData.userId
+                connections: [currentUserId] // Include the current user's ID
+            });
+
+            // Store a notification in the selected user's database
+            const selectedUserRef = doc(db, `users/${notificationData.userId}/notifications/${currentUserId}`);
+            await setDoc(selectedUserRef, {
+                type: 'new_connection',
+                message: `${userData.displayName} has added you.`,
+                timestamp: new Date(),
+                userId: currentUserId,
+                profilePicture: userData.profilePicture,
+                additionalInfo: {
+                    email: userData.email,
+                    displayName: userData.displayName,
+                }
             });
 
             // Delete the notification from the current notifications
             await deleteDoc(notificationRef);
 
-            setNotifications(prevNotifications => prevNotifications.filter(notification => notification.id !== notificationId));
+            alert('User added successfully!');
         } catch (error) {
-            console.error('Error adding notification back:', error);
-        } finally {
-            setLoadingNotificationId(null); // Reset loading state
+            console.error('Error adding user:', error);
+            alert('Failed to add user. Please try again.');
+        }
+    };
+
+    const handleDeleteNotification = async (notificationId) => {
+        setLoadingNotificationId(notificationId);
+
+        try {
+            const userId = auth.currentUser.uid;
+            const notificationRef = doc(db, `users/${userId}/notifications/${notificationId}`);
+            await deleteDoc(notificationRef);
+
+            setNotifications(notifications.filter(notification => notification.id !== notificationId));
+            setLoadingNotificationId(null);
+        } catch (error) {
+            console.error('Error deleting notification:', error);
+            setLoadingNotificationId(null);
         }
     };
 
@@ -118,33 +158,12 @@ function ProfilePage() {
         return <p>Loading...</p>;
     }
 
-    function SettingsOption() {
-        return (
-            <div className="option-section">
-                <h3>Settings</h3>
-                <p>Adjust your application settings here.</p>
-                {/* Add any settings-related options or forms here */}
-            </div>
-        );
-    }
-
-    function HelpSection() {
-        return (
-            <div className="option-section">
-                <h3>Help</h3>
-                <p>Find answers to common questions.</p>
-                {/* Add FAQ, support links, or contact forms here */}
-            </div>
-        );
-    }
-
     return (
         <div className="profile-page">
             <button className="back-button" onClick={() => navigate(-1)}>
                 Back
             </button>
             <div className="scrollable-content">
-
                 {userData ? (
                     <div className="profile-info">
                         <div className="profile-pic-container">
@@ -169,60 +188,43 @@ function ProfilePage() {
 
                         <div className="notifications-section">
                             <h3>Notifications</h3>
-                            <div className="scrollable-content">
-
-                                {notifications.length > 0 ? (
-                                    <ul className="notifications-list">
-                                        {notifications.map((notification) => (
-                                            <li key={notification.id} className="notification-item">
-                                                <img
-                                                    src={notification.profilePicture || 'default-profile-pic-url'}
-                                                    alt={notification.displayName}
-                                                    className="notification-profile-pic"
-                                                />
-                                                <div className="notification-text">
-                                                    <strong>{notification.displayName}</strong> {notification.message}
-                                                    <p className="notification-email">{notification.email}</p>
-                                                    <p className="notification-timestamp">{notification.timestamp}</p>
-                                                </div>
-                                                <div className="notification-actions">
-                                                    {loadingNotificationId === notification.id ? (
-                                                        <span className="loading-spinner">Loading...</span>
-                                                    ) : (
-                                                        <>
-                                                            <button
-                                                                className="notification-button"
-                                                                onClick={() => handleAddBack(notification.id)}
-                                                            >
-                                                                Add Back
-                                                            </button>
-                                                            <button
-                                                                className="notification-button notification-close"
-                                                                onClick={() => handleCloseNotification(notification.id)}
-                                                            >
-                                                                Close
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p>No notifications available.</p>
-                                )}
-                            </div>
+                            {notifications.length === 0 ? (
+                                <p>You'll be notified here when someone adds you as a friend!</p>
+                            ) : (
+                                <ul className="notifications-list">
+                                    {notifications.map(notification => (
+                                        <li key={notification.id} className="notification-item">
+                                            <img className="notification-profile-pic" src={notification.profilePicture || 'https://via.placeholder.com/50'} alt="Profile" />
+                                            <div className="notification-text">
+                                                <p><strong>{notification.displayName}</strong></p>
+                                                <p>{notification.message}</p>
+                                                <p className="notification-timestamp">{notification.timestamp}</p>
+                                            </div>
+                                            <div className="notification-actions">
+                                                <button
+                                                    className="notification-button"
+                                                    onClick={() => handleAddBack(notification.id)}
+                                                    disabled={loadingNotificationId === notification.id}
+                                                >
+                                                    {loadingNotificationId === notification.id ? 'Adding...' : 'Add Back'}
+                                                </button>
+                                                <button
+                                                    className="notification-button notification-close"
+                                                    onClick={() => handleCloseNotification(notification.id)}
+                                                    disabled={loadingNotificationId === notification.id}
+                                                >
+                                                    {loadingNotificationId === notification.id ? 'Deleting...' : 'Delete'}
+                                                </button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
                     </div>
                 ) : (
                     <p>No user data found.</p>
                 )}
-
-                <div className="more-options">
-                    <h2>More Options</h2>
-                    <SettingsOption />
-                    <HelpSection />
-                </div>
             </div>
         </div>
     );
