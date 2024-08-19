@@ -3,7 +3,7 @@ body, html {
   padding: 0;
   height: 100%;
   overflow: hidden; /* Prevent scrolling */
-  background: linear-gradient(to top, #00642d28, #ffffff); /* Blue to white gradient */
+  background: linear-gradient(to top, #21a6644e, #ffffff); /* Blue to white gradient */
   font-family: Arial, sans-serif;
 }
 

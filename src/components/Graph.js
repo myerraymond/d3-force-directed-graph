@@ -21,7 +21,6 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState(new Set());
   const [expandedLinks, setExpandedLinks] = useState(new Set());
   const [isFriend, setIsFriend] = useState(false);
@@ -31,6 +30,9 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const { currentUser } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [Addloading, AddsetLoading] = useState(false);
+  const [Deleteloading, DeletesetLoading] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -390,11 +392,6 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
     }
   };
 
-
-
-
-
-
   const renderModal = () => {
     if (!selectedNode) return null;
 
@@ -407,7 +404,6 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
             className="modal-profile-image"
           />
           <h2>{selectedNode.label}</h2>
-          {/* <p>{selectedNode.id}</p> */}
           <p>Name: {selectedNode.shortenedName}</p>
           <button onClick={onExpandNetwork} className="expand-network-btn" disabled={loading}>
             {loading ? "Loading..." : "Expand Network"}
