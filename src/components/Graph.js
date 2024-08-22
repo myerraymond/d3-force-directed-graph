@@ -21,7 +21,6 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState(new Set());
   const [expandedLinks, setExpandedLinks] = useState(new Set());
   const [isAdding, setIsAdding] = useState(false);
@@ -30,6 +29,9 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const { currentUser } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [Addloading, AddsetLoading] = useState(false);
+  const [Deleteloading, DeletesetLoading] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {

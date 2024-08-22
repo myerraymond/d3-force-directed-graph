@@ -111,7 +111,7 @@ function MainPage({ handleAddNode }) {
             <AddNodeButton onAddNode={handleAddNodeAndRefresh} />
             <SearchBar showSearchBar={showSearchBar} onFriendAdded={handleFriendAdded}
                 setShowSearchBar={setShowSearchBar} handleFriendSelect={handleFriendSelect} />
-            <ShareButton /> {/* Add the ShareButton component */}
+            {/* <ShareButton /> */}
             {/* <div className="add-section">
                 <h3>Advertisement</h3>
                 <p>Check out our new features!</p>

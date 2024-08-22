@@ -155,12 +155,19 @@
     font-size: 1.2rem;
     cursor: pointer;
     color: #00642D;
+    background-color: #ffffff;
     margin-bottom: 20px;
     transition: color 0.3s;
 }
 
 .back-button:hover {
-    color: #004D1A;
+    color: #fbfbfb;
+    background-color: #000000;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: color 0.3s;
 }
 
 .back-button::before {
