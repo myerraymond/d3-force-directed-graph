@@ -1,16 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { auth, db } from '../firebase';
-import { arrayRemove, setDoc, collection, getDocs, arrayUnion, updateDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
+import {
+  arrayRemove, setDoc, collection, getDocs, arrayUnion, updateDoc, deleteDoc, doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import "./Graph.css";
-import { useAuth } from '../AuthContext';
 import { useAuth } from '../AuthContext';
 
 const defaultImage = "./0.png";
 const primaryNode = "John";
 
-const Graph = ({ userId, onClose, onFriendAdded }) => {
 const Graph = ({ userId, onClose, onFriendAdded }) => {
   const svgRef = useRef();
   const containerRef = useRef();
@@ -19,14 +18,12 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
-
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
   const [loading, setLoading] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState(new Set());
   const [expandedLinks, setExpandedLinks] = useState(new Set());
-  const [isFriend, setIsFriend] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [addSuccess, setAddSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -44,10 +41,9 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
 
     window.addEventListener("resize", handleResize);
     handleResize();
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
+  
   const fetchData = async (uid) => {
     try {
       const nodesCollectionRef = collection(db, `users/${uid}/nodes`);
@@ -93,16 +89,52 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
     }
   };
 
+
   useEffect(() => {
+    const fetchData = async (uid) => {
+      try {
+        const nodesCollectionRef = collection(db, `users/${uid}/nodes`);
+        const nodesSnapshot = await getDocs(nodesCollectionRef);
+
+        const nodeMap = {};
+        nodesSnapshot.docs.forEach(doc => {
+          const node = { id: doc.id, ...doc.data() };
+          nodeMap[node.id] = node;
+        });
+
+        const nodes = Object.values(nodeMap);
+        const links = nodes.flatMap(node => 
+          node.connections?.map(connectionId => ({
+            source: node.id,
+            target: connectionId,
+            type: 'friend',
+            strength: 1
+          })) || []
+        );
+
+        const userDetailsPromises = nodes.map(async (node) => {
+          const userRef = doc(db, `users/${node.id}`);
+          const userDoc = await getDoc(userRef);
+          return { id: node.id, ...node, ...userDoc.data() };
+        });
+
+        const detailedNodes = await Promise.all(userDetailsPromises);
+
+        setExpandedNodes(new Set(detailedNodes.map(node => node.id)));
+        setExpandedLinks(new Set(links.map(link => `${link.source}-${link.target}`)));
+
+        setGraphData({ nodes: detailedNodes, links });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
     if (userId) {
       fetchData(userId);
     } else {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-          fetchData(user.uid);
-        } else {
-          setGraphData({ nodes: [], links: [] });
-        }
+        if (user) fetchData(user.uid);
+        else setGraphData({ nodes: [], links: [] });
       });
 
       return () => unsubscribe();
@@ -114,23 +146,20 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
     svg.selectAll("*").remove();
 
     const { width, height } = dimensions;
-
     const zoom = d3.zoom().scaleExtent([0.5, 5]).on("zoom", (event) => {
       g.attr("transform", event.transform);
     });
 
     const g = svg.append("g");
-
     svg.call(zoom);
 
-    const simulation = d3
-      .forceSimulation()
-      .force("link", d3.forceLink().id((d) => d.id).distance(150))
+    const simulation = d3.forceSimulation()
+      .force("link", d3.forceLink().id(d => d.id).distance(150))
       .force("charge", d3.forceManyBody().strength(-300))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .force("collision", d3.forceCollide().radius(20));
 
-    graphData.nodes.forEach((node) => {
+    graphData.nodes.forEach(node => {
       if (node.id === primaryNode) {
         node.fx = width / 2;
         node.fy = height / 2;
@@ -143,16 +172,15 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
 
     function ticked() {
       link
-        .attr("x1", (d) => d.source.x)
-        .attr("y1", (d) => d.source.y)
-        .attr("x2", (d) => d.target.x)
-        .attr("y2", (d) => d.target.y);
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
 
-      node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+      node.attr("transform", d => `translate(${d.x},${d.y})`);
     }
 
-    const link = g
-      .append("g")
+    const link = g.append("g")
       .attr("class", "links")
       .selectAll("line")
       .data(graphData.links)
@@ -162,19 +190,16 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
       .attr("stroke-opacity", 0.8)
       .attr("stroke-width", 1);
 
-    const node = g
-      .append("g")
+    const node = g.append("g")
       .attr("class", "nodes")
       .selectAll("g")
       .data(graphData.nodes)
       .enter()
       .append("g")
-      .call(
-        d3
-          .drag()
-          .on("start", dragstarted)
-          .on("drag", dragged)
-          .on("end", dragended)
+      .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended)
       )
       .on("click", (event, d) => {
         setSelectedNode(d);
@@ -184,23 +209,21 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
         }
       });
 
-    node
-      .append("image")
-      .attr("xlink:href", (d) => d.profilePicture || defaultImage)
+    node.append("image")
+      .attr("xlink:href", d => d.profilePicture || defaultImage)
       .attr("width", 40)
       .attr("height", 40)
       .attr("x", -20)
       .attr("y", -20)
       .attr("clip-path", "url(#clip-circle)");
 
-    node.append("title").text((d) => d.label);
+    node.append("title").text(d => d.label);
 
-    node
-      .append("text")
+    node.append("text")
       .attr("x", 0)
       .attr("y", 25)
-      .style("font-weight", (d) => (d.id === primaryNode ? "bold" : "normal"))
-      .text((d) => d.label);
+      .style("font-weight", d => d.id === primaryNode ? "bold" : "normal")
+      .text(d => d.label);
 
     simulation.on("tick", ticked);
 
@@ -229,9 +252,7 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
   }, [dimensions, graphData, expandedNodes]);
 
   const refreshGraph = () => {
-    if (userId) {
-      setGraphData({ nodes: [], links: [] });
-    }
+    if (userId) setGraphData({ nodes: [], links: [] });
   };
 
   const closeModal = () => {
@@ -252,7 +273,7 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
       const nodes = nodesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
       const connectedNodeIds = nodes
-        .filter(node => node.connections && node.connections.includes(selectedNode.id))
+        .filter(node => node.connections?.includes(selectedNode.id))
         .map(node => node.id);
 
       await deleteDoc(doc(db, `users/${userUid}/nodes`, selectedNode.id));
@@ -292,22 +313,14 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
       });
 
       const nodes = Object.values(nodeMap);
-      const links = [];
-
-      nodes.forEach(node => {
-        if (node.connections) {
-          node.connections.forEach(connectionId => {
-            if (nodeMap[connectionId]) {
-              links.push({
-                source: node.id,
-                target: connectionId,
-                type: 'friend',
-                strength: 1
-              });
-            }
-          });
-        }
-      });
+      const links = nodes.flatMap(node => 
+        node.connections?.map(connectionId => ({
+          source: node.id,
+          target: connectionId,
+          type: 'friend',
+          strength: 1
+        })) || []
+      );
 
       setGraphData(prev => {
         const existingNodeIds = new Set(prev.nodes.map(n => n.id));
@@ -337,35 +350,27 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
     setSuccessMessage('');
 
     try {
-
       const userId = user.id;
       const userDocRef = doc(db, 'users', userId);
       const userDoc = await getDoc(userDocRef);
       const userData = userDoc.data();
 
-      if (!userData) {
-        throw new Error('User data not found');
-      }
+      if (!userData) throw new Error('User data not found');
 
       const currentUserRef = doc(db, 'users', currentUser.uid);
       const currentUserDoc = await getDoc(currentUserRef);
       const currentUserData = currentUserDoc.data();
 
-      if (!currentUserData) {
-        throw new Error('Current user data not found');
-      }
+      if (!currentUserData) throw new Error('Current user data not found');
 
       const userNodeRef = doc(db, `users/${currentUser.uid}/nodes/${userId}`);
-
-      // Add the selected user to the current user's connections
       await setDoc(userNodeRef, {
         id: userId,
         label: userData.displayName,
         profilePicture: userData.profilePicture,
-        connections: [currentUser.uid] // No need to add self to connections
+        connections: [currentUser.uid]
       });
 
-      // Store a notification in the selected user's database
       const notificationRef = doc(db, `users/${userId}/notifications/${currentUser.uid}`);
       await setDoc(notificationRef, {
         displayName: currentUserData.displayName,
@@ -377,126 +382,43 @@ const Graph = ({ userId, onClose, onFriendAdded }) => {
         userId: currentUser.uid
       });
 
-      setSuccessMessage('You have successfully added ' + user.displayName + '!');
+      setSuccessMessage(`You have successfully added ${user.displayName}!`);
       setAddSuccess(true);
-      if (onClose) onClose(); // Close the modal or popup if necessary
-      if (onFriendAdded) onFriendAdded(); // Callback for friend added
-
+      if (onClose) onClose();
+      if (onFriendAdded) onFriendAdded();
     } catch (error) {
       console.error('Error adding user:', error);
     } finally {
       setIsAdding(false);
-      setTimeout(() => {
-        window.location.reload(); // Refresh the page
-      }, 2000);
+      setTimeout(() => window.location.reload(), 2000);
     }
   };
 
-
-
-
-
-
-  const handleAddNode = async (user) => {
-    setIsAdding(true);
-    setAddSuccess(false);
-    setSuccessMessage('');
-
-    try {
-
-        const userId = user.id;
-        const userDocRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userDocRef);
-        const userData = userDoc.data();
-
-        if (!userData) {
-            throw new Error('User data not found');
-        }
-
-        const currentUserRef = doc(db, 'users', currentUser.uid);
-        const currentUserDoc = await getDoc(currentUserRef);
-        const currentUserData = currentUserDoc.data();
-
-        if (!currentUserData) {
-            throw new Error('Current user data not found');
-        }
-
-        const userNodeRef = doc(db, `users/${currentUser.uid}/nodes/${userId}`);
-
-        // Add the selected user to the current user's connections
-        await setDoc(userNodeRef, {
-            id: userId,
-            label: userData.displayName,
-            profilePicture: userData.profilePicture,
-            connections: [currentUser.uid] // No need to add self to connections
-        });
-
-        // Store a notification in the selected user's database
-        const notificationRef = doc(db, `users/${userId}/notifications/${currentUser.uid}`);
-        await setDoc(notificationRef, {
-            displayName: currentUserData.displayName,
-            email: currentUserData.email,
-            message: `${currentUserData.displayName} has added you to their network.`,
-            profilePicture: currentUserData.profilePicture,
-            timestamp: new Date(),
-            type: 'new_connection',
-            userId: currentUser.uid
-        });
-
-        setSuccessMessage('You have successfully added ' + user.displayName + '!');
-        setAddSuccess(true);
-        if (onClose) onClose(); // Close the modal or popup if necessary
-        if (onFriendAdded) onFriendAdded(); // Callback for friend added
-
-    } catch (error) {
-        console.error('Error adding user:', error);
-    } finally {
-        setIsAdding(false);
-        setTimeout(() => {
-            window.location.reload(); // Refresh the page
-        }, 2000);
-    }
-};
-
-
-
-
-
-
   const renderModal = () => {
-    if (expandedNodes.has(selectedNode.id)) {
-      return (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <img src={selectedNode.profilePicture || defaultImage} alt={selectedNode.label} className="modal-profile-picture" />
-            <p>{selectedNode.displayName}</p>
-            <p>Name: {selectedNode.shortenedName}</p>
+    if (!selectedNode) return null;
+
+    const isExpanded = expandedNodes.has(selectedNode.id);
+
+    return (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <img src={selectedNode.profilePicture || defaultImage} alt={selectedNode.label} className="modal-profile-picture" />
+          <p>{selectedNode.displayName}</p>
+          <p>Name: {selectedNode.shortenedName}</p>
+          {isExpanded ? (
             <button onClick={onExpandNetwork} className="expand-network-btn">
               Expand Network
             </button>
-            <button onClick={closeModal}>Close</button>
-
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <img src={selectedNode.profilePicture || defaultImage} alt={selectedNode.label} className="modal-profile-picture" />
-            <p>{selectedNode.displayName}</p>
-            <p>Name: {selectedNode.shortenedName}</p>
+          ) : (
             <button onClick={handleDeleteNode} disabled={loading}>
               {loading ? "Deleting..." : "Delete"}
             </button>
-            <button onClick={closeModal}>Close</button>
-          </div>
+          )}
+          <button onClick={closeModal}>Close</button>
         </div>
       </div>
     );
   };
-
-
 
   return (
     <div ref={containerRef} className="graph-container">
