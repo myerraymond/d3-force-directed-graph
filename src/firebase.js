@@ -5,16 +5,6 @@ import { getFirestore, doc, updateDoc, getDoc, getDocs, collection } from 'fireb
 import { getAuth } from "firebase/auth";
 import { getStorage } from 'firebase/storage';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDOLx-Wi3zyWk5-Prvqca6-jr_ZhHdYxsg",
-  authDomain: "net-work-40212.firebaseapp.com",
-  projectId: "net-work-40212",
-  storageBucket: "net-work-40212.appspot.com",
-  messagingSenderId: "529297384050",
-  appId: "1:529297384050:web:5059b4634680cd354e58eb",
-  measurementId: "G-XRNND1BMGM"
-};
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app); // Get a Firestore instance from Firebase app
