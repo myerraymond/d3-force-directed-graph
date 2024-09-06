@@ -3,15 +3,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDOLx-Wi3zyWk5-Prvqca6-jr_ZhHdYxsg",
-    authDomain: "net-work-40212.firebaseapp.com",
-    projectId: "net-work-40212",
-    storageBucket: "net-work-40212.appspot.com",
-    messagingSenderId: "529297384050",
-    appId: "1:529297384050:web:5059b4634680cd354e58eb",
-    measurementId: "G-XRNND1BMGM"
-  };
+
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
